@@ -1,0 +1,28 @@
+apply plugin: 'groovy'
+apply from: 'gradle/integration-tests.gradle'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+version = '1.0'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.3', {
+        exclude module : 'groovy-all'
+    }
+}
+
+integrationTest {
+    systemProperties TESTROOT : buildDir
+
+    if(gradle.startParameter.isOffline()) {
+        systemProperties OFFLINE: 1
+    }
+}
