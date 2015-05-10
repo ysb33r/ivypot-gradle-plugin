@@ -1,4 +1,4 @@
-package org.ysb33r.gradle.localrepo
+package org.ysb33r.gradle.ivypot
 
 /**
  * @author Schalk W. Cronjé

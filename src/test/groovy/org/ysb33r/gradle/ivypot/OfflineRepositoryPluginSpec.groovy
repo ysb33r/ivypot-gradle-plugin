@@ -1,4 +1,4 @@
-package org.ysb33r.gradle.localrepo
+package org.ysb33r.gradle.ivypot
 
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
@@ -12,7 +12,7 @@ class OfflineRepositoryPluginSpec extends Specification {
     def "Can the plugin be applied"() {
         given:
             def project = ProjectBuilder.builder().build()
-            project.apply plugin : 'org.ysb33r.offline-repo'
+            project.apply plugin : 'org.ysb33r.ivypot'
 
         expect:
             project.tasks.getByName('syncRemoteRepositories') instanceof OfflineRepositorySync

@@ -1,26 +1,28 @@
-package org.ysb33r.gradle.localrepo
+package org.ysb33r.gradle.ivypot
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import groovy.xml.NamespaceBuilder
-import org.gradle.api.artifacts.repositories.ArtifactRepository
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.reflect.DirectInstantiator
 import org.gradle.util.CollectionUtils
+import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
 
 @CompileStatic
 class OfflineRepositorySync extends DefaultTask {
 
-    static final String ARTIFACT_PATTERN = '[organisation]/[module]/[type]s/[artifact]-[revision].[ext]'
+    static final String ARTIFACT_PATTERN = '[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]'
     static final String IVY_PATTERN  = '[organisation]/[module]/ivys/ivy-[revision].xml'
+    private static final String LOCALREPONAME = '~~~local~~~repo~~~'
+    private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
 
     @OutputDirectory
     @CompileDynamic
@@ -80,8 +82,12 @@ class OfflineRepositorySync extends DefaultTask {
         configurator()
     }
 
-    List<String> getRepositoryNames() {
-        repositories.collect { ArtifactRepository it -> it.name }
+    /** Access to the repositories that have been defined
+     *
+     * @return A repository handler that Gradle users hsould be accustomed to.
+     */
+    RepositoryHandler getRepositories() {
+        this.repositories
     }
 
     /** Obtains a list of all the dependencies contained within
@@ -101,6 +107,14 @@ class OfflineRepositorySync extends DefaultTask {
         deps
     }
 
+    /** Returns the artifact pattern that will be used for storing dependendencies
+     *
+     * @return Artifact pattern or null in case repoRoot has not been set.
+     */
+    String getArtifactPattern() {
+        repoRoot ? "${repoRoot}/${ARTIFACT_PATTERN}" : null
+    }
+
     @TaskAction
     void exec() {
 
@@ -109,18 +123,30 @@ class OfflineRepositorySync extends DefaultTask {
         getRepoRoot().mkdirs()
         initIvyInstaller()
 
-        repositoryNames.each { String from ->
-            dependencies.each { Dependency dep ->
-                ivyInstall(dep,from,overwrite)
-            }
+        dependencies.each { Dependency dep ->
+            ivyInstall(dep,overwrite)
         }
+
     }
 
+    /**
+     *
+     * @param dep
+     * @param overwrite
+     *
+     * @sa {@link https://ant.apache.org/ivy/history/trunk/use/resolve.html}
+     */
     @PackageScope
     @CompileDynamic
-    void ivyInstall( Dependency dep, final String fromRepo, boolean overwrite ) {
-        ant.'ivy:install' (
-            from: fromRepo, to: localRepoName,
+    void ivyInstall( Dependency dep, boolean overwrite ) {
+//        ivyAnt.'ivy:install' (
+//            from: REMOTECHAINNAME, to: LOCALREPONAME,
+//            organisation: dep.group, module: dep.name, revision: dep.version,
+//            transitive:true, overwrite: overwrite
+//        )
+        ivyAnt.'ivy:resolve' (
+            inline : true,
+            from: REMOTECHAINNAME, to: LOCALREPONAME,
             organisation: dep.group, module: dep.name, revision: dep.version,
             transitive:true, overwrite: overwrite
         )
@@ -128,11 +154,10 @@ class OfflineRepositorySync extends DefaultTask {
 
     @PackageScope
     @CompileDynamic
-    def initIvyInstaller() {
+    void initIvyInstaller() {
         File ivySettings = createIvySettingsFile()
         ivyAnt = NamespaceBuilder.newInstance(new AntBuilder(),'antlib:org.apache.ivy.ant','ivy')
         ivyAnt.'ivy:configure' ( file : ivySettings.absolutePath )
-        ivyAnt
     }
 
     @PackageScope
@@ -145,24 +170,35 @@ class OfflineRepositorySync extends DefaultTask {
     @PackageScope
     @CompileDynamic
     String ivyXml() {
-        String xml= "<ivysettings><settings defaultResolver='${localRepoName}'/><resolvers>"
+        String xml= "<ivysettings><settings defaultResolver='${LOCALREPONAME}'/>"
+
+        xml+= """<caches defaultCacheDir='${repoRoot}' artifactPattern='${ARTIFACT_PATTERN}' ivyPattern='${IVY_PATTERN}'/>"""
+
+        this.repositories.each {
+            if(it.metaClass.respondsTo(it,'getCredentials')) {
+                if (it.credentials.username && it.credentials.password) {
+                    xml+="<credentials host='${it.url.host}' username='${it.credentials.username}' passwd='${it.credentials.password}'/>"
+                }
+            }
+        }
+
+        xml+="""<resolvers>
+            <filesystem name="${LOCALREPONAME}">
+                <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
+                <artifact pattern="${artifactPattern}"/>
+            </filesystem><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
 
         this.repositories.each { xml+= it.resolverXml() }
-        xml+="""
-            <filesystem name="${localRepoName}">
-                <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
-                <artifact pattern="${repoRoot}/${ARTIFACT_PATTERN}"/>
-            </filesystem></resolvers></ivysettings>"""
+
+        xml+= """</chain></resolvers></ivysettings>"""
 
 //        <bintray name="${defaultResolver}"/>
-//        <filesystem name="${localRepoName}">
+//        <filesystem name="${LOCALREPONAME}">
 //            <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
 //            <artifact pattern="${repoRoot}/${ARTIFACT_PATTERN}"/>
 //        </filesystem>
     }
-
-    @PackageScope
-    final String localRepoName = '$$$local-repo$$$'
+// https://github.com/apache/incubator-groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml
 
     @PackageScope
     def ivyAnt
@@ -174,6 +210,6 @@ class OfflineRepositorySync extends DefaultTask {
     List<Object> configurations = []
 
     @PackageScope
-    RepositoryHandler repositories = new RepositoryHandler()
+    RepositoryHandler repositories = new DefaultRepositoryHandler( new BaseRepositoryFactory() ,new DirectInstantiator())
 
 }
