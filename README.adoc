@@ -30,6 +30,20 @@ apply plugin : 'org.ysb33r.ivypot'
 
 or if you use Gradle 2.1+
 
+If you are in a restricted environment, you might want to use approach number #1 and conditionally add the remote reference
+to work only when you are in a non-restricted environment. i.e.
+
+[source,groovy]
+----
+  repositories {
+    if(!System.getenv('RESTRICTED')) {
+      maven {
+          url "https://plugins.gradle.org/m2/"
+      }
+    }
+  }
+----
+
 [source,groovy]
 ----
 plugins {
@@ -69,6 +83,8 @@ syncRemoteRepositories {
   }
 
   configurations 'compile', 'testCompile' // <3>
+
+  includeBuildScriptDependencies = false // <4>
 }
 ----
 <1> Defines the location of the off-line repository root.
@@ -76,6 +92,7 @@ syncRemoteRepositories {
   and therefore supports all the standard repository definitions a Gradle user would expect.
 <3> Restrict the configurations you would like to have added to the synchronisation process. If none are supplied,
   dependencies from all configurations will be added.
+<4> Whether to add dependencies from `buildscript`. (See further down).
 
 == Usage
 
@@ -108,3 +125,8 @@ buildscript {
 }
 ----
 <1> Define the path to the local repository here
+
+== Adding buildscript dependencies
+
+By default buildscript dependencies will not be added to the synchronisation list. By setting `includeBuildScriptDependencies = true` in
+the configuration closure of the task these will be added.
