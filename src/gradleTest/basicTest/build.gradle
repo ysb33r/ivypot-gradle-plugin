@@ -1,0 +1,16 @@
+buildscript {
+    dependencies {
+        classpath 'org.ysb33r.gradle:ivypot:%%VERSION%%'
+    }
+}
+
+apply plugin : 'org.ysb33r.ivypot'
+
+syncRemoteRepositories {
+    repoRoot "${buildDir}/repo"
+    configurations
+}
+
+task runGradleTest {
+    dependsOn syncRemoteRepositories
+}

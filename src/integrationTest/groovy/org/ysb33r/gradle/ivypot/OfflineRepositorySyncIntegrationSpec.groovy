@@ -86,6 +86,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
 
                 syncRemoteRepositories {
                     repositories {
+                        jcenter()
                         mavenCentral()
                     }
 
@@ -93,6 +94,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                 }
                 secondSync {
                     repositories {
+                        jcenter()
                         mavenCentral()
                     }
 

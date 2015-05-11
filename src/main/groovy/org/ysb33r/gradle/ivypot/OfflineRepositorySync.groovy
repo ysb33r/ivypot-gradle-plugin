@@ -146,9 +146,8 @@ class OfflineRepositorySync extends DefaultTask {
 //        )
         ivyAnt.'ivy:resolve' (
             inline : true,
-            from: REMOTECHAINNAME, to: LOCALREPONAME,
             organisation: dep.group, module: dep.name, revision: dep.version,
-            transitive:true, overwrite: overwrite
+            transitive:true
         )
     }
 
@@ -167,10 +166,14 @@ class OfflineRepositorySync extends DefaultTask {
         target
     }
 
+
+    /** Returns the XML required for ivysettings.xml.
+    * @sa {@link https://github.com/apache/incubator-groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml}
+    */
     @PackageScope
     @CompileDynamic
     String ivyXml() {
-        String xml= "<ivysettings><settings defaultResolver='${LOCALREPONAME}'/>"
+        String xml= "<ivysettings><settings defaultResolver='${REMOTECHAINNAME}'/>"
 
         xml+= """<caches defaultCacheDir='${repoRoot}' artifactPattern='${ARTIFACT_PATTERN}' ivyPattern='${IVY_PATTERN}'/>"""
 
@@ -191,14 +194,7 @@ class OfflineRepositorySync extends DefaultTask {
         this.repositories.each { xml+= it.resolverXml() }
 
         xml+= """</chain></resolvers></ivysettings>"""
-
-//        <bintray name="${defaultResolver}"/>
-//        <filesystem name="${LOCALREPONAME}">
-//            <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
-//            <artifact pattern="${repoRoot}/${ARTIFACT_PATTERN}"/>
-//        </filesystem>
-    }
-// https://github.com/apache/incubator-groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml
+     }
 
     @PackageScope
     def ivyAnt
