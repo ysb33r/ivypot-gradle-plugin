@@ -1,0 +1,110 @@
+= IvyPot - A Gradle plugin for Off-line Repositories
+
+Not all development teams have the luxury of relying on Maven Central, Bintray for day to day development. Some of them
+are still fortunate to proxy public repositories via in-house Artifactory or Nexxus instances. Others have even more
+strict requirements including the abaility to be able to build an isolated environment. This plugin is for them. It allows
+for pubic dependencies, including transitive dependencies, to be downloaded in a controlled manner and the internal
+security processes to be applied to the binary files before committing them to an internal storage area.
+
+== Previous versions
+
+There are no previous versions as the first version has not been released as yet.
+
+== Adding the plugin
+
+[source,groovy]
+----
+buildscript {
+  repositories {
+      maven {
+          url "https://plugins.gradle.org/m2/"
+      }
+  }
+  dependencies {
+    classpath 'org.ysb33r.gradle:ivypot:0.3'
+  }
+}
+
+apply plugin : 'org.ysb33r.ivypot'
+----
+
+or if you use Gradle 2.1+
+
+[source,groovy]
+----
+plugins {
+  id 'org.ysb33r.ivypot' version '0.3'
+}
+----
+
+== Defining Remote Repositories
+
+The plugin provides a default task called `syncRemoteRepositories` which is of type `org.ysb33r.gradle.ivypot.OfflineRepositorySync`.
+(You are free to create more instances of this task type).
+
+[source,groovy]
+----
+syncRemoteRepositories {
+  repoRoot '/path/to/repo' // <1>
+
+  repositories {  // <2>
+    jcenter()
+    mavenCentral()
+    mavenLocal()
+    maven {
+      url 'http://foo/bar'
+      credentials {
+        username 'pig'
+        password 'hog'
+      }
+    }
+
+    flatDir {
+      dirs '/path/dir1', '/path/dir2'
+    }
+
+    ivy {
+    }
+
+  }
+
+  configurations 'compile', 'testCompile' // <3>
+}
+----
+<1> Defines the location of the off-line repository root.
+<2> `repositories` in an implementation of http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/dsl/RepositoryHandler.html[RepositoryHandler]
+  and therefore supports all the standard repository definitions a Gradle user would expect.
+<3> Restrict the configurations you would like to have added to the synchronisation process. If none are supplied,
+  dependencies from all configurations will be added.
+
+== Usage
+
+For normal usage one simply has to point to the local repository. It is assumed that this repository would be committed
+to some form of source control or artifact management which is accessible with the restricted environment. The layout of
+this repository is a standard Ivy layout.
+
+[source,groovy]
+----
+repositories {
+  ivy {
+    url 'file:///path/to/repo' // <1>
+  }
+}
+----
+// <1> Define the path to the local repository here
+
+== Boostrapping plugins in a restricted environment
+
+Just add the repository to `repositories` closure
+
+[source,groovy]
+----
+buildscript {
+    repositories {
+      ivy {
+        url 'file:///path/to/repo' // <1>
+      }
+    }
+}
+----
+// <1> Define the path to the local repository here

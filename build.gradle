@@ -1,10 +1,34 @@
-apply plugin: 'groovy'
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.0"
+        classpath 'org.ysb33r.gradle:gradletest:0.5.3'
+
+        // See: https://github.com/hierynomus/license-gradle-plugin/issues/67
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0', {
+            exclude module : 'guava'
+        }
+    }
+}
+
+apply plugin : 'groovy'
+apply plugin : 'maven'
+apply plugin : 'com.gradle.plugin-publish'
+apply plugin : 'com.github.hierynomus.license'
+apply plugin : 'org.ysb33r.gradletest'
+
 apply from: 'gradle/integration-tests.gradle'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-version = '0.3'
+version = '0.3-SNAPSHOT'
 
 repositories {
     jcenter()
@@ -25,4 +49,23 @@ integrationTest {
     if(gradle.startParameter.isOffline()) {
         systemProperties OFFLINE: 1
     }
+}
+
+license {
+    header = rootProject.file('config/HEADER')
+    strictCheck = true
+    ignoreFailures = false
+    mapping {
+        groovy ='DOUBLESLASH_STYLE'
+    }
+    ext.year = '2013-2015'
+    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md','**/*.properties'])
+}
+
+gradleLocations {
+    downloadToGradleUserHome = true
+}
+
+gradleTest {
+    versions '2.0','2.2','2.4'
 }
