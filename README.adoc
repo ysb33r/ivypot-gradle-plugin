@@ -91,7 +91,7 @@ repositories {
   }
 }
 ----
-// <1> Define the path to the local repository here
+<1> Define the path to the local repository here
 
 == Boostrapping plugins in a restricted environment
 
@@ -107,4 +107,4 @@ buildscript {
     }
 }
 ----
-// <1> Define the path to the local repository here
+<1> Define the path to the local repository here
