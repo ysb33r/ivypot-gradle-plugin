@@ -23,7 +23,9 @@ import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import groovy.xml.NamespaceBuilder
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.reflect.DirectInstantiator
@@ -33,10 +35,14 @@ import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
 @CompileStatic
 class OfflineRepositorySync extends DefaultTask {
 
-    static final String ARTIFACT_PATTERN = '[organisation]/[module]/[type]s/[artifact]-[revision](-[classifier]).[ext]'
-    static final String IVY_PATTERN  = '[organisation]/[module]/ivys/ivy-[revision].xml'
+
+    static final String ARTIFACT_PATTERN = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
+    static final String IVY_PATTERN  = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
     private static final String LOCALREPONAME = '~~~local~~~repo~~~'
     private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
+
+    @Input
+    boolean includeBuildScriptDependencies = false
 
     @OutputDirectory
     @CompileDynamic
@@ -54,17 +60,22 @@ class OfflineRepositorySync extends DefaultTask {
 
     /** If no configuratiosn were listed, returns all the configurations
      *
-     * @return a configuration container with all of the named configurations
+     * @return A project configuration container with all of the named configurations. Does not
+     * return the {@code buildscript} configuration in here. THe latter is made available directly to
      */
+    @CompileDynamic
     ConfigurationContainer getConfigurations() {
+        ConfigurationContainer cc
         if(this.configurations) {
             List<String> names = CollectionUtils.stringize(this.configurations)
-            project.configurations.matching { Configuration it ->
+            cc = project.configurations.matching { Configuration it ->
                 names.contains(it.name)
             } as ConfigurationContainer
         } else {
-            project.configurations
+            cc = project.configurations
         }
+
+        return cc
     }
 
     /** Clears the current list of configurations and assigns a new list
@@ -118,6 +129,13 @@ class OfflineRepositorySync extends DefaultTask {
                 deps.add(it)
             }
         }
+
+        if(includeBuildScriptDependencies) {
+            project.buildscript.configurations.classpath.allDependencies.all {
+                deps.add(it)
+            }
+        }
+
         deps
     }
 
@@ -153,11 +171,6 @@ class OfflineRepositorySync extends DefaultTask {
     @PackageScope
     @CompileDynamic
     void ivyInstall( Dependency dep, boolean overwrite ) {
-//        ivyAnt.'ivy:install' (
-//            from: REMOTECHAINNAME, to: LOCALREPONAME,
-//            organisation: dep.group, module: dep.name, revision: dep.version,
-//            transitive:true, overwrite: overwrite
-//        )
         ivyAnt.'ivy:resolve' (
             inline : true,
             organisation: dep.group, module: dep.name, revision: dep.version,

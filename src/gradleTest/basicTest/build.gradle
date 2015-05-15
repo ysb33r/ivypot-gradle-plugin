@@ -1,14 +1,31 @@
 buildscript {
+    repositories {
+        flatDir {
+            dirs "${gradle.gradleHomeDir}/lib/plugins"
+        }
+    }
     dependencies {
         classpath 'org.ysb33r.gradle:ivypot:%%VERSION%%'
+        classpath ':ivy:2.2.0'
     }
 }
 
 apply plugin : 'org.ysb33r.ivypot'
 
+configurations {
+    simple
+}
+
+dependencies {
+    simple 'commons-io:commons-io:2.4'
+}
+
 syncRemoteRepositories {
     repoRoot "${buildDir}/repo"
-    configurations
+
+    repositories {
+        jcenter()
+    }
 }
 
 task runGradleTest {

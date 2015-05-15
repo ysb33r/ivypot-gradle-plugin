@@ -17,12 +17,23 @@ package org.ysb33r.gradle.ivypot.internal
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.IvyArtifactRepositoryMetaDataProvider
 import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.api.internal.artifacts.repositories.layout.GradleRepositoryLayout
+import org.gradle.api.internal.artifacts.repositories.layout.IvyRepositoryLayout
+import org.gradle.api.internal.artifacts.repositories.layout.MavenRepositoryLayout
+import org.gradle.api.internal.artifacts.repositories.layout.PatternRepositoryLayout
+import org.gradle.api.internal.artifacts.repositories.resolver.ResourcePattern
 import org.ysb33r.gradle.ivypot.IvyXml
+import org.ysb33r.gradle.ivypot.OfflineRepositorySync
 
 /**
  * @author Schalk W. Cronjé
  */
 class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
+
+    String artifactPattern
+    String ivyPattern
+    String layoutName
+
     /**
      * Adds an independent pattern that will be used to locate artifact files in this repository. This pattern will be used to locate ivy files as well, unless a specific
      * ivy pattern is supplied via {@link #ivyPattern(String)}.
@@ -36,7 +47,7 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      */
     @Override
     void artifactPattern(String pattern) {
-
+        this.artifactPattern += pattern
     }
 
     /**
@@ -51,7 +62,7 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      */
     @Override
     void ivyPattern(String pattern) {
-
+        this.ivyPattern = pattern
     }
 
     /**
@@ -62,7 +73,22 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      */
     @Override
     void layout(String layoutName) {
-
+        switch (layoutName) {
+            case 'maven':
+                repositoryLayout = new MavenRepositoryLayout()
+                break
+            case 'ivy':
+                repositoryLayout = new IvyRepositoryLayout()
+                break
+            case 'gradle':
+                repositoryLayout = new GradleRepositoryLayout()
+                break
+            case 'pattern':
+                repositoryLayout = new PatternRepositoryLayout()
+                break
+            default:
+                throw new UnsupportedOperationException("'${layoutName}' is not a valid layout")
+        }
     }
 
     /**
@@ -114,14 +140,17 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      */
     @Override
     void layout(String layoutName, Closure config) {
-
+        layout(layoutName)
+        def cfg = config.clone()
+        cfg.delegate = repositoryLayout
+        cfg()
     }
 
     /**
      * Returns the meta-data provider used when resolving artifacts from this repository. The provider is responsible for locating and interpreting the meta-data
      * for the modules and artifacts contained in this repository. Using this provider, you can fine tune how this resolution happens.
      *
-     * @return The meta-data provider for this repository.
+     * @return Null. This is not supported at present.
      */
     @Override
     IvyArtifactRepositoryMetaDataProvider getResolve() {
@@ -134,6 +163,23 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      */
     @Override
     String resolverXml() {
-        return null
+
+        if (repositoryLayout == null) {
+            throw new UnsupportedOperationException('layout has not seen set for Ivy repository')
+        }
+
+        def patterns = new PatternBasedResolver()
+        repositoryLayout.apply(url, patterns)
+
+        String ret = "<url name='${name}' m2compatible='${patterns.m2compatible ? 'true' : 'false'}'>"
+        patterns.ivyPatterns.each {
+            ret += "<ivy pattern='${it.pattern}'/>"
+        }
+        patterns.artifactPatterns.each {
+            ret += "<artifact pattern='${it.pattern}'/>"
+        }
+        ret += '</url>'
     }
+
+    private def repositoryLayout
 }

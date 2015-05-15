@@ -44,7 +44,7 @@ class BaseRepositoryFactory implements org.gradle.api.internal.artifacts.BaseRep
 
     @Override
     IvyArtifactRepository createIvyRepository() {
-        return null
+        new IvyRepository()
     }
 
     @Override

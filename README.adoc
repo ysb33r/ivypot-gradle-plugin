@@ -130,3 +130,7 @@ buildscript {
 
 By default buildscript dependencies will not be added to the synchronisation list. By setting `includeBuildScriptDependencies = true` in
 the configuration closure of the task these will be added.
+
+== Limitations
+
+The resolution process cannot be fine-tuned at present - not to the level at least which is described in http://gradle.org/docs/current//userguide/dependency_management.html#sec:ivy_repositories.

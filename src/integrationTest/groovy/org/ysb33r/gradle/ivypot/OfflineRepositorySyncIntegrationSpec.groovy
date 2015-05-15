@@ -16,116 +16,161 @@ package org.ysb33r.gradle.ivypot
 
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.Dependency
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.IgnoreIf
 import spock.lang.Specification
+import spock.lang.Stepwise
 
 
-/**
+/** These fixtures needs to run in the order specified as these tests are expensive in terms of downloads
+ * The repository is only created once during the run to save on download time.
+ *
  * @author Schalk W. Cronjé
  */
+@Stepwise
 class OfflineRepositorySyncIntegrationSpec extends Specification {
 
     static final boolean OFFLINE = System.getProperty('IS_OFFLINE')
-    static final File TESTROOT = new File( "${System.getProperty('TESTROOT') ?: new File('./build').absolutePath}/integrationTest/orsis" )
-    static final File LOCALREPO = new File(TESTROOT,'local-offline-repo')
+    static final File ROOT = new File("${System.getProperty('TESTROOT') ?: new File('./build').absolutePath}/integrationTest/orsis")
+    static final File TESTROOT = new File(ROOT,'tests')
+    static final File LOCALREPO = new File(ROOT, 'local-offline-repo')
 
     Project project
     Task syncTask
 
-    void setup() {
+    void setupSpec() {
 
-        if(TESTROOT.exists()) {
+        if (LOCALREPO.exists()) {
+            LOCALREPO.deleteDir()
+        }
+
+        LOCALREPO.mkdirs()
+
+    }
+
+    void setup() {
+        if (TESTROOT.exists()) {
             TESTROOT.deleteDir()
         }
 
         TESTROOT.mkdirs()
-
         project = ProjectBuilder.builder().withProjectDir(TESTROOT).build()
-        project.apply plugin : 'org.ysb33r.ivypot'
+        project.apply plugin: 'org.ysb33r.ivypot'
     }
 
-    @IgnoreIf({OFFLINE})
+    @IgnoreIf({ OFFLINE })
     def "Can we sync from mavenCentral?"() {
 
         given:
-            def pathToLocalRepo = LOCALREPO
+        def pathToLocalRepo = LOCALREPO
 
-            project.allprojects {
+        project.allprojects {
 
-                configurations {
-                    compile
-                }
-
-                // tag::example_jcenter[]
-                dependencies {
-                    compile 'commons-io:commons-io:2.4'
-                }
-
-                syncRemoteRepositories {
-                    repositories {
-                        mavenCentral()
-                    }
-
-                    repoRoot "${pathToLocalRepo}"
-                }
-                // end::example_jcenter[]
+            configurations {
+                compile
             }
 
-            project.evaluate()
-            project.tasks.syncRemoteRepositories.execute()
+            // tag::example_jcenter[]
+            dependencies {
+                compile 'commons-io:commons-io:2.4'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    mavenCentral()
+                }
+
+                repoRoot "${pathToLocalRepo}"
+            }
+            // end::example_jcenter[]
+        }
+
+        project.evaluate()
+        project.tasks.syncRemoteRepositories.execute()
 
         expect:
-            LOCALREPO.exists()
-            new File(LOCALREPO,'commons-io/commons-io//ivys/ivy-2.4.xml').exists()
-            new File(LOCALREPO,'commons-io/commons-io//jars/commons-io-2.4.jar').exists()
+        LOCALREPO.exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io.jar').exists()
     }
 
-    @IgnoreIf({OFFLINE})
+    @IgnoreIf({ OFFLINE })
     def "Two syncs to same folder should not cause an overwrite exceptions"() {
 
         given:
-            def pathToLocalRepo = LOCALREPO
-            project.tasks.create('secondSync',OfflineRepositorySync)
+        def pathToLocalRepo = LOCALREPO
 
-            project.allprojects {
+        project.allprojects {
 
-                configurations {
-                    compile
+            configurations {
+                compile
+            }
+
+            dependencies {
+                compile 'commons-io:commons-io:2.4'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    jcenter()
+                    mavenCentral()
                 }
 
+                repoRoot "${pathToLocalRepo}"
+            }
+
+        }
+
+        project.evaluate()
+        project.tasks.syncRemoteRepositories.execute()
+
+        expect:
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io.jar').exists()
+    }
+
+    @IgnoreIf({ OFFLINE })
+    def "Seting includeBuildScriptDependencies means that buildscript configuration will be added"() {
+
+        given:
+        def pathToLocalRepo = new File(ROOT,'second-repo')
+
+        project.allprojects {
+
+            buildscript {
+                repositories {
+                    ivy {
+                        url LOCALREPO.toURI()
+                        layout 'ivy'
+                    }
+                }
                 dependencies {
-                    compile 'commons-io:commons-io:2.4'
-                }
-
-                syncRemoteRepositories {
-                    repositories {
-                        jcenter()
-                        mavenCentral()
-                    }
-
-                    repoRoot "${pathToLocalRepo}"
-                }
-                secondSync {
-                    repositories {
-                        jcenter()
-                        mavenCentral()
-                    }
-
-                    repoRoot "${pathToLocalRepo}"
+                    classpath 'commons-io:commons-io:2.4'
                 }
             }
 
-            project.evaluate()
-            project.tasks.syncRemoteRepositories.execute()
-            project.tasks.secondSync.execute()
+
+            syncRemoteRepositories {
+                repositories {
+                    ivy {
+                        url LOCALREPO.toURI()
+                    }
+                }
+
+                repoRoot "${pathToLocalRepo}"
+
+                includeBuildScriptDependencies = true
+            }
+        }
+
+        project.evaluate()
+
+        Set<Dependency> deps = project.syncRemoteRepositories.dependencies
 
         expect:
-            LOCALREPO.exists()
-            project.tasks.secondSync.didWork
-
-            new File(LOCALREPO,'commons-io/commons-io//ivys/ivy-2.4.xml').exists()
-            new File(LOCALREPO,'commons-io/commons-io//jars/commons-io-2.4.jar').exists()
+        deps.find { Dependency it -> it.group == 'commons-io' && it.name == 'commons-io' && it.version == '2.4' }
     }
 
 }

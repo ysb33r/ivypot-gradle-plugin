@@ -41,6 +41,8 @@ dependencies {
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.3', {
         exclude module : 'groovy-all'
     }
+
+//    gradleTest ''
 }
 
 integrationTest {
@@ -67,5 +69,6 @@ gradleLocations {
 }
 
 gradleTest {
-    versions '2.0','2.2','2.4'
+    versions '2.0'
+//    versions '2.2','2.4'
 }

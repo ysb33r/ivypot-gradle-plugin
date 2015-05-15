@@ -15,6 +15,7 @@
 package org.ysb33r.gradle.ivypot
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
@@ -33,7 +34,7 @@ class OfflineRepositorySyncSpec extends Specification {
         syncTask = project.tasks.create('syncTask',OfflineRepositorySync)
     }
 
-    def "TEST configuration" () {
+    def "Setting up repositories" () {
 
         given:
         project.allprojects {
@@ -64,8 +65,33 @@ class OfflineRepositorySyncSpec extends Specification {
                         }
                     }
 
-                    // ivy {
-                    // }
+                    ivy {
+                        url 'http://ivy/climber'
+                        layout 'maven'
+                    }
+
+                    ivy {
+                        url 'http://gradle/grover'
+                        layout 'gradle'
+                    }
+
+                    ivy {
+                        url 'http://hog/roast'
+                        layout 'ivy'
+
+                        credentials {
+                            username 'the'
+                            password 'pig'
+                        }
+                    }
+
+                    ivy {
+                        url 'http://pat/tern'
+                        layout 'pattern', {
+                            artifact '[artifact].[ext]'
+                            ivy 'foo/ivy.xml'
+                        }
+                    }
 
 //                    flatDir {
 //                        dirs
@@ -76,11 +102,15 @@ class OfflineRepositorySyncSpec extends Specification {
         }
 println "*** ${syncTask.repositories.names}"
         // Need to extract repositories in order collected using these gradle-assigned names
-        def mavenC = syncTask.repositories.getByName('MavenRepo')
-        def mavenL = syncTask.repositories.getByName('MavenLocal')
-        def maven2 = syncTask.repositories.getByName('maven')
-        def maven3 = syncTask.repositories.getByName('maven2')
-        def bintray= syncTask.repositories.getByName('BintrayJCenter')
+        def mavenC =    syncTask.repositories.getByName('MavenRepo')
+        def mavenL =    syncTask.repositories.getByName('MavenLocal')
+        def maven2 =    syncTask.repositories.getByName('maven')
+        def maven3 =    syncTask.repositories.getByName('maven2')
+        def bintray=    syncTask.repositories.getByName('BintrayJCenter')
+        def ivyMaven=   syncTask.repositories.getByName('ivy')
+        def ivyGradle=  syncTask.repositories.getByName('ivy2')
+        def ivyIvy=     syncTask.repositories.getByName('ivy3')
+        def ivyPattern= syncTask.repositories.getByName('ivy4')
 
         expect: 'Local repo has been set'
         syncTask.repoRoot == new File('/path/to/folder').absoluteFile
@@ -109,5 +139,78 @@ println "*** ${syncTask.repositories.names}"
         and: 'mavenLocal is loaded'
         mavenL.resolverXml() == """<ibiblio name="MavenLocal" root="file:${System.getProperty('user.home')}/.m2/repository/" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
 
+        and: 'ivy with maven layout loaded'
+        ivyMaven.resolverXml() == '''<url name='ivy' m2compatible='true'>''' +
+            "<ivy pattern='http://ivy/climber/[organisation]/[module]/[revision]/ivy-[revision].xml'/>" +
+            "<artifact pattern='http://ivy/climber/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
+            '</url>'
+
+        and: 'ivy with gradle layout loaded'
+        ivyGradle.resolverXml() == '''<url name='ivy2' m2compatible='false'>''' +
+            "<ivy pattern='http://gradle/grover/[organisation]/[module]/[revision]/ivy-[revision].xml'/>" +
+            "<artifact pattern='http://gradle/grover/${IvyArtifactRepository.GRADLE_ARTIFACT_PATTERN}'/>" +
+            '</url>'
+
+        and: 'ivy with ivy layout loaded + credentials'
+        ivyIvy.resolverXml() == '''<url name='ivy3' m2compatible='false'>''' +
+            "<ivy pattern='http://hog/roast/${IvyArtifactRepository.IVY_ARTIFACT_PATTERN}'/>" +
+            "<artifact pattern='http://hog/roast/${IvyArtifactRepository.IVY_ARTIFACT_PATTERN}'/>" +
+            '</url>'
+        ivyIvy.credentials.username == 'the'
+        ivyIvy.credentials.password == 'pig'
+
+        and: 'ivy with pattern layout loaded'
+        ivyPattern.resolverXml() == '''<url name='ivy4' m2compatible='false'>''' +
+            "<ivy pattern='http://pat/tern/foo/ivy.xml'/>" +
+            "<artifact pattern='http://pat/tern/[artifact].[ext]'/>" +
+            '</url>'
+
+        //and: 'a flatDir repo can be added'
     }
+
+    def "Not specifying a configuration, means all configurations are loaded"() {
+        given:
+        project.allprojects {
+            syncTask {
+
+            }
+
+            configurations {
+                config1
+                config2
+            }
+        }
+        ConfigurationContainer configs = syncTask.configurations
+
+        expect:
+        configs.getByName('config1') != null
+        configs.getByName('config2') != null
+        configs.size() == 2
+    }
+
+    def "Specifying configurations means only those are added"() {
+        given:
+        project.allprojects {
+            syncTask {
+                configurations 'config1'
+            }
+
+            configurations {
+                config1
+                config2
+            }
+        }
+        ConfigurationContainer configs = syncTask.configurations
+
+        when:
+        configs.getByName('config2') != null
+
+        then:
+        thrown(org.gradle.api.UnknownDomainObjectException)
+
+        and:
+        configs.getByName('config1') != null
+        configs.size() == 1
+    }
+
 }
