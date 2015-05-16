@@ -28,10 +28,12 @@ import groovy.xml.NamespaceBuilder
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
+import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.reflect.DirectInstantiator
+import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.CollectionUtils
 import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
 
@@ -49,6 +51,8 @@ class OfflineRepositorySync extends DefaultTask {
 
         ivyConfig = createIvyConfigurator(this,ivyJar)
         ivyResolve = createIvyResolver(this,ivyJar)
+
+        repositories = createRepositoryHandler(project.gradle)
     }
 
     @Input
@@ -229,30 +233,37 @@ class OfflineRepositorySync extends DefaultTask {
 
     private def ivyConfig
     private def ivyResolve
+    private Object repoRoot
+    private List<Object> configurations = []
+    private RepositoryHandler repositories
 
-    @PackageScope
-    Object repoRoot
-
-    @PackageScope
-    List<Object> configurations = []
-
-    @PackageScope
-    RepositoryHandler repositories = new DefaultRepositoryHandler( new BaseRepositoryFactory() ,new DirectInstantiator())
-
+    /** Returns the JAR path to be used for loading IVY.
+     *
+     * @param project
+     * @return Returns the classpath (or null if the class is already available).
+     */
     @CompileDynamic
     private static String findIvyJarPath(Project project) {
-        def files = new File(project.gradle.gradleHomeDir,'lib/plugins').listFiles( new FilenameFilter() {
-            @Override
-            boolean accept(File dir, String name) {
-                name ==~ /ivy-\d.+.jar/
+        if(Class.forName('org.apache.ivy.ant.IvyConfigure')) {
+            return null
+        } else {
+            // TODO: Check whether org.apache.ivy.ant.IvyConfigure is available,
+            // If it is, then obtain the URL to where it can be found
+            // otherwise continue as below
+
+            def files = new File(project.gradle.gradleHomeDir, 'lib/plugins').listFiles(new FilenameFilter() {
+                @Override
+                boolean accept(File dir, String name) {
+                    name ==~ /ivy-\d.+.jar/
+                }
+            })
+
+            if (!files?.size()) {
+                throw new GradleException("Cannot locate an Ivy Ant jar in ${project.gradle.gradleHomeDir}/lib/plugins")
             }
-        })
 
-        if(!files?.size()) {
-            throw new GradleException("Cannot locate an Ivy Ant jar in ${project.gradle.gradleHomeDir}/lib/plugins")
+            return files[0]
         }
-
-        files[0]
     }
 
     @CompileDynamic
@@ -277,6 +288,20 @@ class OfflineRepositorySync extends DefaultTask {
                 transitive:true
             )
         }
+    }
+
+    @CompileDynamic
+    private static RepositoryHandler createRepositoryHandler(Gradle gradle) {
+        Instantiator instantiator
+
+        // This handles this difference in the internal API between 2.3 & 2.4
+        if (DirectInstantiator.metaClass.static.hasProperty('INSTANCE')) {
+            instantiator - DirectInstantiator.INSTANCE
+        } else {
+            instantiator = new DirectInstantiator()
+        }
+
+        new DefaultRepositoryHandler(new BaseRepositoryFactory(), instantiator)
     }
 
 }

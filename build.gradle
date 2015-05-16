@@ -70,5 +70,9 @@ gradleLocations {
 
 gradleTest {
     versions '2.0'
-//    versions '2.2','2.4'
+    versions '2.2'
+    versions '2.3'
+    versions '2.4'
+
+    dependsOn jar
 }
