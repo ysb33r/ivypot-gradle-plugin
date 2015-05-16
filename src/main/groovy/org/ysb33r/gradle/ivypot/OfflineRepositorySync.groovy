@@ -18,6 +18,9 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
@@ -40,6 +43,13 @@ class OfflineRepositorySync extends DefaultTask {
     static final String IVY_PATTERN  = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
     private static final String LOCALREPONAME = '~~~local~~~repo~~~'
     private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
+
+    OfflineRepositorySync() {
+        String ivyJar = findIvyJarPath(project)
+
+        ivyConfig = createIvyConfigurator(this,ivyJar)
+        ivyResolve = createIvyResolver(this,ivyJar)
+    }
 
     @Input
     boolean includeBuildScriptDependencies = false
@@ -171,19 +181,13 @@ class OfflineRepositorySync extends DefaultTask {
     @PackageScope
     @CompileDynamic
     void ivyInstall( Dependency dep, boolean overwrite ) {
-        ivyAnt.'ivy:resolve' (
-            inline : true,
-            organisation: dep.group, module: dep.name, revision: dep.version,
-            transitive:true
-        )
+        ivyResolve dep
     }
 
     @PackageScope
     @CompileDynamic
     void initIvyInstaller() {
-        File ivySettings = createIvySettingsFile()
-        ivyAnt = NamespaceBuilder.newInstance(new AntBuilder(),'antlib:org.apache.ivy.ant','ivy')
-        ivyAnt.'ivy:configure' ( file : ivySettings.absolutePath )
+        ivyConfig createIvySettingsFile()
     }
 
     @PackageScope
@@ -223,8 +227,8 @@ class OfflineRepositorySync extends DefaultTask {
         xml+= """</chain></resolvers></ivysettings>"""
      }
 
-    @PackageScope
-    def ivyAnt
+    private def ivyConfig
+    private def ivyResolve
 
     @PackageScope
     Object repoRoot
@@ -234,5 +238,45 @@ class OfflineRepositorySync extends DefaultTask {
 
     @PackageScope
     RepositoryHandler repositories = new DefaultRepositoryHandler( new BaseRepositoryFactory() ,new DirectInstantiator())
+
+    @CompileDynamic
+    private static String findIvyJarPath(Project project) {
+        def files = new File(project.gradle.gradleHomeDir,'lib/plugins').listFiles( new FilenameFilter() {
+            @Override
+            boolean accept(File dir, String name) {
+                name ==~ /ivy-\d.+.jar/
+            }
+        })
+
+        if(!files?.size()) {
+            throw new GradleException("Cannot locate an Ivy Ant jar in ${project.gradle.gradleHomeDir}/lib/plugins")
+        }
+
+        files[0]
+    }
+
+    @CompileDynamic
+    private static def createIvyConfigurator(Task task,final String ivyJar) {
+        task.project.ant.taskdef name: "${task.name}Configure",
+            classname: 'org.apache.ivy.ant.IvyConfigure',
+            classpath : ivyJar
+        return { File ivySettings ->
+            task.project.ant."${task.name}Configure" file : ivySettings.absolutePath
+        }
+    }
+
+    @CompileDynamic
+    private static def createIvyResolver(Task task,final String ivyJar) {
+        task.project.ant.taskdef name: "${task.name}Resolve",
+            classname: 'org.apache.ivy.ant.IvyResolve',
+            classpath : ivyJar
+        return { Dependency dep ->
+            task.project.ant."${task.name}Resolve" (
+                inline : true,
+                organisation: dep.group, module: dep.name, revision: dep.version,
+                transitive:true
+            )
+        }
+    }
 
 }
