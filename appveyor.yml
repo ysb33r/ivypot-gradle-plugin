@@ -1,0 +1,29 @@
+version: "{branch} {build}"
+
+build:
+  verbosity: detailed
+
+build_script:
+  - gradlew.bat -PTRAVIS_CI=1 assemble --info --no-daemon -PbintrayUserName -PbintrayApiKey
+
+test_script:
+  - gradlew.bat check gradleTest -PTRAVIS_CI=1 --info --no-daemon -PbintrayUserName -PbintrayApiKey
+
+branches:
+  only:
+    - master
+    - development
+
+cache:
+  - C:\Users\appveyor\.gradle
+
+environment:
+  matrix:
+  - JAVA_HOME: C:\Program Files\Java\jdk1.7.0
+  - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
+  - JAVA_HOME: C:\Program Files (x86)\Java\jdk1.7.0
+  - JAVA_HOME: C:\Program Files (x86)\Java\jdk1.8.0
+
+matrix:
+  fast_finish: true
+

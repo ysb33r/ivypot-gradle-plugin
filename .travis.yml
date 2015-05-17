@@ -1,0 +1,23 @@
+
+language: groovy
+
+install:
+ - ./gradlew -S clean  --info
+
+script:
+ - ./gradlew  -S build gradleTest --info
+
+jdk:
+ - oraclejdk7
+ - oraclejdk8
+ - openjdk7
+ - openjdk6
+
+os:
+ - linux
+ - osx
+
+env:
+ - TERM=dumb
+
+#after_success: ./gradlew coveralls -PbintrayUser= -PbintrayApiKey
