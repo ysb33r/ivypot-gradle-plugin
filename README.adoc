@@ -8,7 +8,7 @@ security processes to be applied to the binary files before committing them to a
 
 == Previous versions
 
-There are no previous versions as the first version has not been released as yet.
+* https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_1(Release 0.3.1)
 
 == Adding the plugin
 
