@@ -21,7 +21,7 @@ class MavenLocal extends MavenRepository {
 
     MavenLocal() {
         super()
-        url =  "file:${new File(System.getProperty('user.home')).absolutePath}/.m2/repository/"
+        url =  "${new File(System.getProperty('user.home')).absoluteFile.toURI()}.m2/repository/"
     }
 
     @Override
