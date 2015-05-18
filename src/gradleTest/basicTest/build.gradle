@@ -33,7 +33,6 @@ task syncRemoteRepositories2 ( type : org.ysb33r.gradle.ivypot.OfflineRepository
 
         maven {
             url 'https://plugins.gradle.org/m2'
-            artifactUrls 'https://plugins.gradle.org/m2'
         }
     }
 

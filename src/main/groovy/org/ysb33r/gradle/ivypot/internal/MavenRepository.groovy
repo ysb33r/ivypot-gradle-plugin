@@ -74,6 +74,7 @@ class MavenRepository implements MavenArtifactRepository, IvyXml, RepositoryTrai
     String resolverXml() {
         // TODO: Test == [organisation]/[module]/[revision]/[artifact]-[revision].[ext]
         String ret = "<url name='${name}' m2compatible='true'>"
+        ret+= "<artifact pattern='${url}/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>"
         getArtifactUrls().each { URI u ->
             ret+= "<artifact pattern='${u}/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>"
         }

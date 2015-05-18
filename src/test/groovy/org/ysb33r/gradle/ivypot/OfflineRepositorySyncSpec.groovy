@@ -123,7 +123,8 @@ println "*** ${syncTask.repositories.names}"
 
         and: 'a maven repo can be added'
         maven2.url == 'http://foo.com/bar'.toURI()
-        maven2.resolverXml() == '''<url name='maven' m2compatible='true'></url>'''
+        maven2.resolverXml() == '''<url name='maven' m2compatible='true'>''' +
+            "<artifact pattern='http://foo.com/bar/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/></url>"
 
         and: 'a maven repo with artifact urls and credentials can be added'
         maven3.url == 'http://hog.com/whole'.toURI()
@@ -132,6 +133,7 @@ println "*** ${syncTask.repositories.names}"
         maven3.credentials.username == 'the'
         maven3.credentials.password == 'pig'
         maven3.resolverXml() == '''<url name='maven2' m2compatible='true'>''' +
+            "<artifact pattern='http://hog.com/whole/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
             "<artifact pattern='http://hog.com/one/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
             "<artifact pattern='http://hog.com/two/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
             '</url>'
