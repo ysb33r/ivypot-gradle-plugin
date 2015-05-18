@@ -21,7 +21,7 @@ buildscript {
       }
   }
   dependencies {
-    classpath 'org.ysb33r.gradle:ivypot:0.3'
+    classpath 'org.ysb33r.gradle:ivypot:0.3.2'
   }
 }
 
@@ -73,26 +73,29 @@ syncRemoteRepositories {
       }
     }
 
-    flatDir {
-      dirs '/path/dir1', '/path/dir2'
+    ivy {
+      url 'http://foo.bar'  // <3>
     }
 
-    ivy {
+    flatDir {
+      dirs '/path/dir1', '/path/dir2' // <4>
     }
 
   }
 
-  configurations 'compile', 'testCompile' // <3>
+  configurations 'compile', 'testCompile' // <5>
 
-  includeBuildScriptDependencies = false // <4>
+  includeBuildScriptDependencies = false // <6>
 }
 ----
 <1> Defines the location of the off-line repository root.
 <2> `repositories` in an implementation of http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/dsl/RepositoryHandler.html[RepositoryHandler]
   and therefore supports all the standard repository definitions a Gradle user would expect.
-<3> Restrict the configurations you would like to have added to the synchronisation process. If none are supplied,
+<3> Ivy repositories in all incantantions available to Gradle is supported.
+<4> Flat directory support is planned, but not yet supported.
+<5> Restrict the configurations you would like to have added to the synchronisation process. If none are supplied,
   dependencies from all configurations will be added.
-<4> Whether to add dependencies from `buildscript`. (See further down).
+<6> Whether to add dependencies from `buildscript`. (See further down).
 
 == Usage
 
