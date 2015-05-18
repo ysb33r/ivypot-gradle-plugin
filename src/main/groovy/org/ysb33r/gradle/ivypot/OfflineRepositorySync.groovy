@@ -34,6 +34,7 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.FileUtils
 import org.gradle.internal.reflect.DirectInstantiator
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.CollectionUtils
@@ -222,9 +223,11 @@ class OfflineRepositorySync extends DefaultTask {
     @PackageScope
     @CompileDynamic
     String ivyXml() {
+        File cacheDir = project.gradle.startParameter.projectCacheDir ?: new File(project.buildDir,'tmp')
         String xml= "<ivysettings><settings defaultResolver='${REMOTECHAINNAME}'/>"
 
-        xml+= """<caches defaultCacheDir='${repoRoot}' artifactPattern='${ARTIFACT_PATTERN}' ivyPattern='${IVY_PATTERN}'/>"""
+        xml+= "<caches defaultCacheDir='${repoRoot}' artifactPattern='${ARTIFACT_PATTERN}' ivyPattern='${IVY_PATTERN}' " +
+            "resolutionCacheDir='${cacheDir}/ivypot/${FileUtils.toSafeFileName(name)}'/>"
 
         this.repositories.each {
             if(it.metaClass.respondsTo(it,'getCredentials')) {
@@ -260,10 +263,6 @@ class OfflineRepositorySync extends DefaultTask {
         if(DONT_LOOK_FOR_IVY_JAR) {
             return null
         } else {
-            // TODO: Check whether org.apache.ivy.ant.IvyConfigure is available,
-            // If it is, then obtain the URL to where it can be found
-            // otherwise continue as below
-
             def files = new File(project.gradle.gradleHomeDir, 'lib/plugins').listFiles(new FilenameFilter() {
                 @Override
                 boolean accept(File dir, String name) {
