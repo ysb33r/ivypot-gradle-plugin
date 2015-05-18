@@ -44,7 +44,8 @@ apply from: 'gradle/integration-tests.gradle'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-version = '0.3'
+version = '0.3.1'
+group = 'org.ysb33r.gradle'
 
 repositories {
     jcenter()

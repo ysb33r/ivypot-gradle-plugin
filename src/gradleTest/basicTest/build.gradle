@@ -12,6 +12,7 @@ configurations {
 
 dependencies {
     simple 'commons-io:commons-io:2.4'
+
 }
 
 syncRemoteRepositories {
@@ -20,8 +21,25 @@ syncRemoteRepositories {
     repositories {
         jcenter()
     }
+
+    configurations 'simple'
+}
+
+task syncRemoteRepositories2 ( type : org.ysb33r.gradle.ivypot.OfflineRepositorySync) {
+    repoRoot "${buildDir}/repo2"
+
+    repositories {
+        jcenter()
+
+        maven {
+            url 'https://plugins.gradle.org/m2'
+            artifactUrls 'https://plugins.gradle.org/m2'
+        }
+    }
+
+    configurations 'simple'
 }
 
 task runGradleTest {
-    dependsOn syncRemoteRepositories
+    dependsOn syncRemoteRepositories, syncRemoteRepositories2
 }

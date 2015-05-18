@@ -17,6 +17,8 @@ package org.ysb33r.gradle.ivypot
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import org.apache.ivy.Ivy
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -46,11 +48,18 @@ class OfflineRepositorySync extends DefaultTask {
     private static final String LOCALREPONAME = '~~~local~~~repo~~~'
     private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
 
+    @CompileDynamic
     OfflineRepositorySync() {
         String ivyJar = findIvyJarPath(project)
+        ivyAnt = new AntBuilder()
 
-        ivyConfig = createIvyConfigurator(this,ivyJar)
-        ivyResolve = createIvyResolver(this,ivyJar)
+        ivyAnt.taskdef name: "${name}Configure",
+            classname: 'org.apache.ivy.ant.IvyConfigure',
+            classpath : ivyJar
+
+        ivyAnt.taskdef name: "${name}Resolve",
+            classname: 'org.apache.ivy.ant.IvyResolve',
+            classpath : ivyJar
 
         repositories = createRepositoryHandler(project.gradle)
     }
@@ -185,13 +194,18 @@ class OfflineRepositorySync extends DefaultTask {
     @PackageScope
     @CompileDynamic
     void ivyInstall( Dependency dep, boolean overwrite ) {
-        ivyResolve dep
+        ivyAnt."${name}Resolve" (
+            inline : true,
+            organisation: dep.group, module: dep.name, revision: dep.version,
+            transitive:true
+        )
     }
 
     @PackageScope
     @CompileDynamic
     void initIvyInstaller() {
-        ivyConfig createIvySettingsFile()
+        ivyAnt."${name}Configure" file : createIvySettingsFile().absolutePath
+
     }
 
     @PackageScope
@@ -231,11 +245,10 @@ class OfflineRepositorySync extends DefaultTask {
         xml+= """</chain></resolvers></ivysettings>"""
      }
 
-    private def ivyConfig
-    private def ivyResolve
     private Object repoRoot
     private List<Object> configurations = []
     private RepositoryHandler repositories
+    private AntBuilder ivyAnt
 
     /** Returns the JAR path to be used for loading IVY.
      *
@@ -263,30 +276,6 @@ class OfflineRepositorySync extends DefaultTask {
             }
 
             return files[0]
-        }
-    }
-
-    @CompileDynamic
-    private static def createIvyConfigurator(Task task,final String ivyJar) {
-        task.project.ant.taskdef name: "${task.name}Configure",
-            classname: 'org.apache.ivy.ant.IvyConfigure',
-            classpath : ivyJar
-        return { File ivySettings ->
-            task.project.ant."${task.name}Configure" file : ivySettings.absolutePath
-        }
-    }
-
-    @CompileDynamic
-    private static def createIvyResolver(Task task,final String ivyJar) {
-        task.project.ant.taskdef name: "${task.name}Resolve",
-            classname: 'org.apache.ivy.ant.IvyResolve',
-            classpath : ivyJar
-        return { Dependency dep ->
-            task.project.ant."${task.name}Resolve" (
-                inline : true,
-                organisation: dep.group, module: dep.name, revision: dep.version,
-                transitive:true
-            )
         }
     }
 
