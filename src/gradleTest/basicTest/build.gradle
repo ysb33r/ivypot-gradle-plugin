@@ -1,12 +1,6 @@
 buildscript {
-    repositories {
-        flatDir {
-            dirs "${gradle.gradleHomeDir}/lib/plugins"
-        }
-    }
     dependencies {
         classpath 'org.ysb33r.gradle:ivypot:%%VERSION%%'
-        classpath ':ivy:2.2.0'
     }
 }
 
