@@ -86,7 +86,7 @@ pluginBundle {
     tags = ['repositoryManagement','repositories']
 
     plugins {
-        gradletestPlugin {
+        ivypotPlugin {
             id = 'org.ysb33r.ivypot'
             displayName = 'Plugin for maintaining an offline respository'
         }
