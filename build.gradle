@@ -12,7 +12,7 @@
 // ============================================================================
 //
 
-// PLEASE NOTE: INtegration Tests and Gradle Comaptibility tests download a number of files.
+// PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
 
 buildscript {
     repositories {
@@ -44,7 +44,7 @@ apply from: 'gradle/integration-tests.gradle'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-version = '0.3-SNAPSHOT'
+version = '0.3'
 
 repositories {
     jcenter()
@@ -78,6 +78,31 @@ license {
     excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md','**/*.properties'])
 }
 
+pluginBundle {
+    description = 'A plugin that keeps a local repository for offline of isolated environments'
+    website     = 'https://github.com/ysb33r/ivypot-gradle-plugin'
+    vcsUrl      = 'https://github.com/ysb33r/ivypot-gradle-plugin.git'
+
+    tags = ['repositoryManagement','repositories']
+
+    plugins {
+        gradletestPlugin {
+            id = 'org.ysb33r.ivypot'
+            displayName = 'Plugin for maintaining an offline respository'
+        }
+    }
+
+    mavenCoordinates {
+        groupId = project.group
+        artifactId = 'ivypot'
+    }
+
+}
+
+publishPlugins {
+    onlyIf { !version.endsWith("SNAPSHOT") }
+}
+
 gradleLocations {
     downloadToGradleUserHome = true
 }
@@ -89,5 +114,4 @@ gradleTest {
     versions '2.4'
 
     inputs.files jar
-    dependsOn jar
 }
