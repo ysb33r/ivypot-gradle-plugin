@@ -116,7 +116,7 @@ println "*** ${syncTask.repositories.names}"
         def ivyPattern= syncTask.repositories.getByName('ivy4')
 
         expect: 'Local repo has been set'
-        syncTask.repoRoot == new File('/path/to/folder').absoluteFile
+        syncTask.repoRoot == project.file('/path/to/folder')
 
         and: 'mavenCentral is loaded'
         mavenC.resolverXml() == """<ibiblio name="MavenRepo" m2compatible="true"/>"""
