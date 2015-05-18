@@ -140,7 +140,7 @@ println "*** ${syncTask.repositories.names}"
         bintray.resolverXml() == '<ibiblio name="BintrayJCenter" root="https://jcenter.bintray.com/" m2compatible="true"/>'
 
         and: 'mavenLocal is loaded'
-        mavenL.resolverXml() == """<ibiblio name="MavenLocal" root="file:${System.getProperty('user.home')}/.m2/repository/" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
+        mavenL.resolverXml() == """<ibiblio name="MavenLocal" root="${new File(System.getProperty('user.home')).absoluteFile.toURI()}.m2/repository/" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
 
         and: 'ivy with maven layout loaded'
         ivyMaven.resolverXml() == '''<url name='ivy' m2compatible='true'>''' +
