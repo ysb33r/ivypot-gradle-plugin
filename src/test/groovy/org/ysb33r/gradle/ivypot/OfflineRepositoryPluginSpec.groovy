@@ -23,6 +23,10 @@ import spock.lang.Specification
  */
 class OfflineRepositoryPluginSpec extends Specification {
 
+    void setupSpec() {
+        OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
+    }
+
     def "Can the plugin be applied"() {
         given:
             def project = ProjectBuilder.builder().build()

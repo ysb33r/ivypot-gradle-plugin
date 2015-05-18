@@ -41,6 +41,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
     Task syncTask
 
     void setupSpec() {
+        OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
 
         if (LOCALREPO.exists()) {
             LOCALREPO.deleteDir()

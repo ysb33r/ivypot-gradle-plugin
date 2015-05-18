@@ -88,5 +88,6 @@ gradleTest {
     versions '2.3'
     versions '2.4'
 
+    inputs.files jar
     dependsOn jar
 }

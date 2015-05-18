@@ -29,6 +29,9 @@ class OfflineRepositorySyncSpec extends Specification {
     Project project
     OfflineRepositorySync syncTask
 
+    void setupSpec() {
+        OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
+    }
     void setup() {
         project = ProjectBuilder.builder().build()
         syncTask = project.tasks.create('syncTask',OfflineRepositorySync)

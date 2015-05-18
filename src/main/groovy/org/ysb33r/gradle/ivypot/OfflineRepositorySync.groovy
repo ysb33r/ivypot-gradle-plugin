@@ -244,7 +244,7 @@ class OfflineRepositorySync extends DefaultTask {
      */
     @CompileDynamic
     private static String findIvyJarPath(Project project) {
-        if(Class.forName('org.apache.ivy.ant.IvyConfigure')) {
+        if(DONT_LOOK_FOR_IVY_JAR) {
             return null
         } else {
             // TODO: Check whether org.apache.ivy.ant.IvyConfigure is available,
@@ -304,4 +304,6 @@ class OfflineRepositorySync extends DefaultTask {
         new DefaultRepositoryHandler(new BaseRepositoryFactory(), instantiator)
     }
 
+    @PackageScope
+    static boolean DONT_LOOK_FOR_IVY_JAR = false
 }
