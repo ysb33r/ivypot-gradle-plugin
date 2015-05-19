@@ -11,8 +11,8 @@ configurations {
 }
 
 dependencies {
-    simple 'commons-io:commons-io:2.4'
-
+    // Copying this plugin as it has a nice svnkit dependency set
+    simple 'at.bxm.gradleplugins:gradle-svntools-plugin:1.1'
 }
 
 syncRemoteRepositories {
@@ -20,6 +20,9 @@ syncRemoteRepositories {
 
     repositories {
         jcenter()
+        maven {
+            url 'https://plugins.gradle.org/m2'
+        }
     }
 
     configurations 'simple'

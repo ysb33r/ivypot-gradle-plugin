@@ -198,7 +198,8 @@ class OfflineRepositorySync extends DefaultTask {
         ivyAnt."${name}Resolve" (
             inline : true,
             organisation: dep.group, module: dep.name, revision: dep.version,
-            transitive:true
+            transitive:true,
+            conf : '*'
         )
     }
 
