@@ -3,6 +3,10 @@
 == 0.4 - Roadmap
 
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/2[Issue #2] - Add support for `repositories.flatDir`.
+
+== 0.3.3
+
+* https://github.com/ysb33r/ivypot-gradle-plugin/issues/8[Issue #8] - Transitive dependencies are not copied to local repository.
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/7[Issue #7] - When using two `OfflineRepositorySync` tasks, the build fails.
 
 == 0.3.2
