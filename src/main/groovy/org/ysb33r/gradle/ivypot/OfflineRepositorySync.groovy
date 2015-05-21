@@ -238,11 +238,13 @@ class OfflineRepositorySync extends DefaultTask {
             }
         }
 
-        xml+="""<resolvers>
-            <filesystem name="${LOCALREPONAME}">
-                <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
-                <artifact pattern="${artifactPattern}"/>
-            </filesystem><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
+//        xml+="""<resolvers>
+//            <filesystem name="${LOCALREPONAME}">
+//                <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
+//                <artifact pattern="${artifactPattern}"/>
+//            </filesystem><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
+
+        xml+="""<resolvers><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
 
         this.repositories.each { xml+= it.resolverXml() }
 

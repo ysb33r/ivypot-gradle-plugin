@@ -73,12 +73,24 @@ class MavenRepository implements MavenArtifactRepository, IvyXml, RepositoryTrai
     @Override
     String resolverXml() {
         // TODO: Test == [organisation]/[module]/[revision]/[artifact]-[revision].[ext]
-        String ret = "<url name='${name}' m2compatible='true'>"
-        ret+= "<artifact pattern='${url}/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>"
-        getArtifactUrls().each { URI u ->
-            ret+= "<artifact pattern='${u}/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>"
+//        String ret = "<url name='${name}' m2compatible='true'>"
+//        ret+= "<artifact pattern='${url}/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>"
+//        getArtifactUrls().each { URI u ->
+//            ret+= "<artifact pattern='${u}/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>"
+//        }
+//        ret + '</url>'
+        if(artifactUrls.size()) {
+            String ret = "<chain name='${name}'><ibiblio name='${name}_root' m2compatible='true' root='${url}' usepoms='true'/>"
+            getArtifactUrls().eachWithIndex { URI u,int index ->
+                ret+= "<ibiblio name='${name}_${index}' m2compatible='true' root='${u}' usepoms='false'/>"
+            }
+
+            ret + '</chain>'
+
+        } else {
+            "<ibiblio name='${name}' m2compatible='true' root='${url}'/>"
         }
-        ret + '</url>'
+
     }
 
     private List<Object> artifactUrls = []
