@@ -8,7 +8,7 @@
 
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/8[Issue #8] - Transitive dependencies are not copied to local repository.
 
-== 0.3.3
+== 0.3.3 (Avoid this release)
 
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/7[Issue #7] - When using two `OfflineRepositorySync` tasks, the build fails.
 
