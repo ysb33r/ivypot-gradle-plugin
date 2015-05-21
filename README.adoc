@@ -8,6 +8,7 @@ security processes to be applied to the binary files before committing them to a
 
 == Previous versions
 
+* https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_4[Release 0.3.4]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_2[Release 0.3.2]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_1[Release 0.3.1]
 
