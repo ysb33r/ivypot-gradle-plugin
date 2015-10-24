@@ -8,11 +8,13 @@ apply plugin : 'org.ysb33r.ivypot'
 
 configurations {
     simple
+    github
 }
 
 dependencies {
     // Copying this plugin as it has a nice svnkit dependency set
     simple 'at.bxm.gradleplugins:gradle-svntools-plugin:1.1'
+    github ':ivypot-gradle-plugin:master@zip'
 }
 
 syncRemoteRepositories {
@@ -42,6 +44,24 @@ task syncRemoteRepositories2 ( type : org.ysb33r.gradle.ivypot.OfflineRepository
     configurations 'simple'
 }
 
+task syncRemoteRepositories3 ( type : org.ysb33r.gradle.ivypot.OfflineRepositorySync) {
+    repoRoot "${buildDir}/repo3"
+
+    repositories {
+        jcenter()
+
+        ivy {
+            url 'https://github.com/ysb33r/'
+            layout 'pattern', {
+                ivy 'none'
+                artifact '[module]/archive/[revision].[ext]'
+            }
+        }
+    }
+
+    configurations 'simple'
+}
+
 task runGradleTest {
-    dependsOn syncRemoteRepositories, syncRemoteRepositories2
+    dependsOn syncRemoteRepositories, syncRemoteRepositories2, syncRemoteRepositories3
 }

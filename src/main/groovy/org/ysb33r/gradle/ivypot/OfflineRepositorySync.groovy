@@ -285,7 +285,7 @@ class OfflineRepositorySync extends DefaultTask {
     private static RepositoryHandler createRepositoryHandler(Gradle gradle) {
         Instantiator instantiator
 
-        // This handles this difference in the internal API between 2.3 & 2.4
+        // This handles a difference in the internal API between 2.3 & 2.4
         if (DirectInstantiator.metaClass.static.hasProperty('INSTANCE')) {
             instantiator - DirectInstantiator.INSTANCE
         } else {

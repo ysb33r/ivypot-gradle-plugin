@@ -14,16 +14,10 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
+import groovy.transform.TypeChecked
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.IvyArtifactRepositoryMetaDataProvider
-import org.gradle.api.artifacts.repositories.PasswordCredentials
-import org.gradle.api.internal.artifacts.repositories.layout.GradleRepositoryLayout
-import org.gradle.api.internal.artifacts.repositories.layout.IvyRepositoryLayout
-import org.gradle.api.internal.artifacts.repositories.layout.MavenRepositoryLayout
-import org.gradle.api.internal.artifacts.repositories.layout.PatternRepositoryLayout
-import org.gradle.api.internal.artifacts.repositories.resolver.ResourcePattern
 import org.ysb33r.gradle.ivypot.IvyXml
-import org.ysb33r.gradle.ivypot.OfflineRepositorySync
 
 /**
  * @author Schalk W. Cronjé
@@ -72,23 +66,34 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      * @param layoutName The name of the layout to use.
      */
     @Override
-    void layout(String layoutName) {
+    @TypeChecked
+    void layout(final String layoutName) {
+        final String namespace = 'org.gradle.api.internal.artifacts.repositories.layout.'
+        String repositoryLayoutName
+        Class layoutClass
         switch (layoutName) {
             case 'maven':
-                repositoryLayout = new MavenRepositoryLayout()
-                break
             case 'ivy':
-                repositoryLayout = new IvyRepositoryLayout()
-                break
             case 'gradle':
-                repositoryLayout = new GradleRepositoryLayout()
-                break
             case 'pattern':
-                repositoryLayout = new PatternRepositoryLayout()
+                repositoryLayoutName = layoutName.capitalize()
                 break
             default:
                 throw new UnsupportedOperationException("'${layoutName}' is not a valid layout")
         }
+
+        try {
+            layoutClass =  Class.forName "${namespace}${repositoryLayoutName}RepositoryLayout"
+        } catch(ClassNotFoundException e) {
+            // Change in class name prefix in Gradle 2.3 from 'Pattern' to 'DefaultIvyPattern'.
+            if(layoutName == 'pattern') {
+                layoutClass = Class.forName "${namespace}DefaultIvy${repositoryLayoutName}RepositoryLayout"
+            } else {
+                throw e
+            }
+        }
+
+        repositoryLayout =  layoutClass.newInstance()
     }
 
     /**
