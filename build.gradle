@@ -25,11 +25,7 @@ buildscript {
     dependencies {
         classpath "com.gradle.publish:plugin-publish-plugin:0.9.0"
         classpath 'org.ysb33r.gradle:gradletest:0.5.3'
-
-        // See: https://github.com/hierynomus/license-gradle-plugin/issues/67
-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0', {
-            exclude module : 'guava'
-        }
+        classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1'
     }
 }
 
