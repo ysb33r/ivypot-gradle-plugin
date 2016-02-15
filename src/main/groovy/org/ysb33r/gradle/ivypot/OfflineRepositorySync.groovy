@@ -287,7 +287,7 @@ class OfflineRepositorySync extends DefaultTask {
 
         // This handles a difference in the internal API between 2.3 & 2.4
         if (DirectInstantiator.metaClass.static.hasProperty('INSTANCE')) {
-            instantiator - DirectInstantiator.INSTANCE
+            instantiator = DirectInstantiator.INSTANCE
         } else {
             instantiator = new DirectInstantiator()
         }
