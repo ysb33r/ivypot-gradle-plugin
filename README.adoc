@@ -136,6 +136,20 @@ buildscript {
 By default buildscript dependencies will not be added to the synchronisation list. By setting `includeBuildScriptDependencies = true` in
 the configuration closure of the task these will be added.
 
+== Patterns
+
+By default the pattern used for writing artifacts is the standard
+https://docs.gradle.org/current/javadoc/org/gradle/api/artifacts/repositories/IvyArtifactRepository.html[Ivy Pattern].
+This can be changed by setting
+
+[source,groovy]
+----
+syncRemoteRepositories {
+  repoArtifactPattern = '[organisation]/[module]/[revision]/[type]s/[artifact]-[revision](.[ext])'
+  repoIvyPattern = '[organisation]/[module]/[revision]/[type]s/[artifact]-[revision](.[ext])'
+}
+----
+
 == Limitations
 
 The resolution process cannot be fine-tuned at present - not to the level at least which is described in http://gradle.org/docs/current//userguide/dependency_management.html#sec:ivy_repositories.

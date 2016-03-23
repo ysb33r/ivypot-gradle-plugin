@@ -98,6 +98,42 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
     }
 
     @IgnoreIf({ OFFLINE })
+    def "Can we sync from mavenCentral using a different local artifactPattern?"() {
+
+        given:
+        def pathToLocalRepo = LOCALREPO
+
+        project.allprojects {
+
+            configurations {
+                compile
+            }
+
+            dependencies {
+                compile 'commons-io:commons-io:2.4'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    mavenCentral()
+                }
+
+                repoRoot "${pathToLocalRepo}"
+
+                repoArtifactPattern = '[organisation]/[module]/[revision]/[type]s/[artifact]-[revision](.[ext])'
+            }
+        }
+
+        project.evaluate()
+        project.tasks.syncRemoteRepositories.execute()
+
+        expect:
+        LOCALREPO.exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io-2.4.jar').exists()
+    }
+
+    @IgnoreIf({ OFFLINE })
     def "Two syncs to same folder should not cause an overwrite exceptions"() {
 
         given:
@@ -131,6 +167,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
         new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io.jar').exists()
     }
+
 
     @IgnoreIf({ OFFLINE })
     def "Seting includeBuildScriptDependencies means that buildscript configuration will be added"() {

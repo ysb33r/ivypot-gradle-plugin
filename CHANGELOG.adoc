@@ -4,6 +4,10 @@
 
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/2[Issue #2] - Add support for `repositories.flatDir`.
 
+== 0.3.7
+
+* https://github.com/ysb33r/ivypot-gradle-plugin/issues/10[Issue #11] - Patterns for writing artifacts is now configurable.
+
 == 0.3.6
 
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/10[Issue #10] - Fixes issues that was suppose to be fixed by https://github.com/ysb33r/ivypot-gradle-plugin/issues/8[Issue #9].

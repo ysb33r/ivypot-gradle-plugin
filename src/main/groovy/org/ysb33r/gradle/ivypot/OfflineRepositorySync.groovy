@@ -17,16 +17,12 @@ package org.ysb33r.gradle.ivypot
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
-import org.apache.ivy.Ivy
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
-import groovy.xml.NamespaceBuilder
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
@@ -44,8 +40,6 @@ import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
 class OfflineRepositorySync extends DefaultTask {
 
 
-    static final String ARTIFACT_PATTERN = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
-    static final String IVY_PATTERN  = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
     private static final String LOCALREPONAME = '~~~local~~~repo~~~'
     private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
 
@@ -64,6 +58,18 @@ class OfflineRepositorySync extends DefaultTask {
 
         repositories = createRepositoryHandler(project.gradle)
     }
+
+    /** The pattern that will be used to write artifacts into the target repository
+     *
+     */
+    @Input
+    String repoArtifactPattern = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
+
+    /** The pattern that will be used to write Ivy metafiles into the target repository
+     *
+     */
+    @Input
+    String repoIvyPattern = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
 
     @Input
     boolean includeBuildScriptDependencies = false
@@ -168,7 +174,7 @@ class OfflineRepositorySync extends DefaultTask {
      * @return Artifact pattern or null in case repoRoot has not been set.
      */
     String getArtifactPattern() {
-        repoRoot ? "${repoRoot}/${ARTIFACT_PATTERN}" : null
+        repoRoot ? "${repoRoot}/${repoArtifactPattern}" : null
     }
 
     @TaskAction
@@ -227,7 +233,7 @@ class OfflineRepositorySync extends DefaultTask {
         File cacheDir = project.gradle.startParameter.projectCacheDir ?: new File(project.buildDir,'tmp')
         String xml= "<ivysettings><settings defaultResolver='${REMOTECHAINNAME}'/>"
 
-        xml+= "<caches defaultCacheDir='${repoRoot}' artifactPattern='${ARTIFACT_PATTERN}' ivyPattern='${IVY_PATTERN}' " +
+        xml+= "<caches defaultCacheDir='${repoRoot}' artifactPattern='${repoArtifactPattern}' ivyPattern='${repoIvyPattern}' " +
             "resolutionCacheDir='${cacheDir}/ivypot/${FileUtils.toSafeFileName(name)}'/>"
 
         this.repositories.each {
@@ -240,7 +246,7 @@ class OfflineRepositorySync extends DefaultTask {
 
 //        xml+="""<resolvers>
 //            <filesystem name="${LOCALREPONAME}">
-//                <ivy pattern="${repoRoot}/${IVY_PATTERN}"/>
+//                <ivy pattern="${repoRoot}/${repoIvyPattern}"/>
 //                <artifact pattern="${artifactPattern}"/>
 //            </filesystem><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
 
