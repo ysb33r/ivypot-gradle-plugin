@@ -103,7 +103,7 @@ class OfflineRepositorySyncSpec extends Specification {
             }
             // end::usage[]
         }
-println "*** ${syncTask.repositories.names}"
+
         // Need to extract repositories in order collected using these gradle-assigned names
         def mavenC =    syncTask.repositories.getByName('MavenRepo')
         def mavenL =    syncTask.repositories.getByName('MavenLocal')

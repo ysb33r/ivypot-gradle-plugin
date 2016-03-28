@@ -152,4 +152,7 @@ syncRemoteRepositories {
 
 == Limitations
 
-The resolution process cannot be fine-tuned at present - not to the level at least which is described in http://gradle.org/docs/current//userguide/dependency_management.html#sec:ivy_repositories.
+* The resolution process cannot be fine-tuned at present - not to the level at least which is described
+  in http://gradle.org/docs/current//userguide/dependency_management.html#sec:ivy_repositories.
+* There are some limitations in Apache Ivy where Maven repositories that redirect artifacts to a different URL
+  will cause failures. A known case are Ruby Gems. There is currently no known workaround.

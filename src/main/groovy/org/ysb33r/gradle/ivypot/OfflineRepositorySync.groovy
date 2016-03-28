@@ -17,6 +17,8 @@ package org.ysb33r.gradle.ivypot
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import org.apache.tools.ant.BuildListener
+import org.apache.tools.ant.DefaultLogger
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -184,6 +186,7 @@ class OfflineRepositorySync extends DefaultTask {
 
         getRepoRoot().mkdirs()
         initIvyInstaller()
+        setAntLogLevel()
 
         dependencies.each { Dependency dep ->
             ivyInstall(dep,overwrite)
@@ -205,6 +208,7 @@ class OfflineRepositorySync extends DefaultTask {
             inline : true,
             organisation: dep.group, module: dep.name, revision: dep.version,
             transitive:true,
+            type : '*',
             conf : '*'
         )
     }
@@ -225,7 +229,7 @@ class OfflineRepositorySync extends DefaultTask {
 
 
     /** Returns the XML required for ivysettings.xml.
-    * @sa {@link https://github.com/apache/incubator-groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml}
+    * @sa {@link https://github.com/apache/groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml}
     */
     @PackageScope
     @CompileDynamic
@@ -256,6 +260,33 @@ class OfflineRepositorySync extends DefaultTask {
 
         xml+= """</chain></resolvers></ivysettings>"""
      }
+
+    @PackageScope
+    @CompileDynamic
+    void setAntLogLevel() {
+        if(ivyAnt) {
+            org.apache.tools.ant.Project localRef = ivyAnt.project
+            ivyAnt.project.buildListeners.each { BuildListener it ->
+                if(it instanceof DefaultLogger) {
+                    DefaultLogger antLogger = ((DefaultLogger)it)
+                    switch(project.logging.level) {
+                        case project.logging.level.DEBUG:
+                            antLogger.messageOutputLevel = localRef.MSG_DEBUG
+                            break
+                        case project.logging.level.QUIET:
+                            antLogger.messageOutputLevel = localRef.MSG_ERR
+                            break
+                        case project.logging.level.LIFECYCLE:
+                            antLogger.messageOutputLevel = localRef.MSG_WARN
+                            break
+                        case project.logging.level.INFO:
+                            antLogger.messageOutputLevel = localRef.MSG_VERBOSE
+                            break
+                    }
+                }
+            }
+        }
+    }
 
     private Object repoRoot
     private List<Object> configurations = []

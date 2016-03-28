@@ -19,7 +19,10 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
 import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Ignore
 import spock.lang.IgnoreIf
+import spock.lang.IgnoreRest
+import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Stepwise
 
@@ -210,5 +213,43 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         expect:
         deps.find { Dependency it -> it.group == 'commons-io' && it.name == 'commons-io' && it.version == '2.4' }
     }
+
+    @Issue('https://github.com/ysb33r/ivypot-gradle-plugin/issues/12')
+    @IgnoreIf({ true || OFFLINE })
+    def "Can we sync from a rubygems proxy?"() {
+
+        given:
+        def pathToLocalRepo = LOCALREPO
+
+        project.allprojects {
+
+            configurations {
+                compile
+            }
+
+            // tag::example_rubygems]
+            dependencies {
+                compile 'rubygems:colorize:0.7.7'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    maven { url 'http://rubygems.lasagna.io/proxy/maven/releases' }
+                }
+
+                repoRoot "${pathToLocalRepo}"
+            }
+            // end::example_rubygems[]
+        }
+
+        project.evaluate()
+        project.tasks.syncRemoteRepositories.execute()
+
+        expect:
+        LOCALREPO.exists()
+        new File(LOCALREPO, 'rubygems/colorize/0.7.7/ivys/ivy.xml').exists()
+        new File(LOCALREPO, 'rubygems/colorize/0.7.7/gems/colorize.gem').exists()
+    }
+
 
 }
