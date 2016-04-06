@@ -124,7 +124,7 @@ gradleTest {
     versions '2.4'
     versions '2.8'
     versions '2.10'
-    versions '2.12'
+    versions '2.12', '2.13-rc-1'
 
     inputs.files jar
     inputs.dir file('gradleTest')

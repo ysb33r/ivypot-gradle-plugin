@@ -29,6 +29,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
 import org.gradle.api.invocation.Gradle
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
@@ -262,24 +263,26 @@ class OfflineRepositorySync extends DefaultTask {
      }
 
     @PackageScope
-    @CompileDynamic
+//    @CompileDynamic
     void setAntLogLevel() {
         if(ivyAnt) {
             org.apache.tools.ant.Project localRef = ivyAnt.project
+            LogLevel gradleLogLevel = project.logging.level
             ivyAnt.project.buildListeners.each { BuildListener it ->
                 if(it instanceof DefaultLogger) {
                     DefaultLogger antLogger = ((DefaultLogger)it)
-                    switch(project.logging.level) {
-                        case project.logging.level.DEBUG:
-                            antLogger.messageOutputLevel = localRef.MSG_DEBUG
-                            break
-                        case project.logging.level.QUIET:
-                            antLogger.messageOutputLevel = localRef.MSG_ERR
-                            break
-                        case project.logging.level.LIFECYCLE:
+                    switch(gradleLogLevel) {
+                        case null:
+                        case gradleLogLevel.LIFECYCLE:
                             antLogger.messageOutputLevel = localRef.MSG_WARN
                             break
-                        case project.logging.level.INFO:
+                        case gradleLogLevel.DEBUG:
+                            antLogger.messageOutputLevel = localRef.MSG_DEBUG
+                            break
+                        case gradleLogLevel.QUIET:
+                            antLogger.messageOutputLevel = localRef.MSG_ERR
+                            break
+                        case gradleLogLevel.INFO:
                             antLogger.messageOutputLevel = localRef.MSG_VERBOSE
                             break
                     }
