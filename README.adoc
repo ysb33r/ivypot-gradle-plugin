@@ -1,8 +1,8 @@
 = IvyPot - A Gradle plugin for Off-line Repositories
 
 Not all development teams have the luxury of relying on Maven Central, Bintray for day to day development. Some of them
-are still fortunate to proxy public repositories via in-house Artifactory or Nexxus instances. Others have even more
-strict requirements including the abaility to be able to build an isolated environment. This plugin is for them. It allows
+are still fortunate to proxy public repositories via in-house Artifactory or Nexus instances. Others have even more
+strict requirements including the ability to be able to build an isolated environment. This plugin is for them. It allows
 for pubic dependencies, including transitive dependencies, to be downloaded in a controlled manner and the internal
 security processes to be applied to the binary files before committing them to an internal storage area.
 
@@ -90,7 +90,7 @@ syncRemoteRepositories {
   includeBuildScriptDependencies = false // <6>
 }
 ----
-<1> Defines the location of the off-line repository root.
+<1> Defines the location of the off-line repository root. Must be an absolute path, no relative path.
 <2> `repositories` in an implementation of http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/dsl/RepositoryHandler.html[RepositoryHandler]
   and therefore supports all the standard repository definitions a Gradle user would expect.
 <3> Ivy repositories in all incantantions available to Gradle is supported.
