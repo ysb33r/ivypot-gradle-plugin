@@ -90,7 +90,7 @@ syncRemoteRepositories {
   includeBuildScriptDependencies = false // <6>
 }
 ----
-<1> Defines the location of the off-line repository root.
+<1> Defines the location of the off-line repository root. Must be an absolute path, no relative path.
 <2> `repositories` in an implementation of http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/dsl/RepositoryHandler.html[RepositoryHandler]
   and therefore supports all the standard repository definitions a Gradle user would expect.
 <3> Ivy repositories in all incantantions available to Gradle is supported.
