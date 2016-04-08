@@ -150,8 +150,10 @@ syncRemoteRepositories {
 }
 ----
 
-NOTE: If this is not specified, the default layout which known as 'ivy' will be used. As for the `0.4` release the
-default layout will be `gradle`.
+NOTE: If this is not specified, the default layout which is known as 'gradle' will be used from 0.4 and onwards.
+In the 0.3.x and earlier releases the default layout will be `ivy`. The change was made because it was discovered that
+Gradle handles local Ivy repositories sligtly differently and that plugins such as `groovy`, `scala` and `jruby-gradle`
+which relies on finding a compiler jar in a certain named way failed when used with the local `ivy` layout.
 
 == Limitations
 
