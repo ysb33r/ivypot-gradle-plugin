@@ -52,7 +52,7 @@ to work only when you are in a non-restricted environment. i.e.
 [source,groovy]
 ----
 plugins {
-  id 'org.ysb33r.ivypot' version '0.3'
+  id 'org.ysb33r.ivypot' version '0.4'
 }
 ----
 
