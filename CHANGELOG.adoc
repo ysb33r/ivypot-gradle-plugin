@@ -2,7 +2,6 @@
 
 == 0.4 - Roadmap
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/2[Issue #2] - Add support for `repositories.flatDir`.
 * https://github.com/ysb33r/ivypot-gradle-plugin/issues/12[Issue #12] - Make default layout 'gradle'.
 
 == 0.3.7

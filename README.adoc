@@ -79,25 +79,20 @@ syncRemoteRepositories {
       url 'http://foo.bar'  // <3>
     }
 
-    flatDir {
-      dirs '/path/dir1', '/path/dir2' // <4>
-    }
-
   }
 
-  configurations 'compile', 'testCompile' // <5>
+  configurations 'compile', 'testCompile' // <4>
 
-  includeBuildScriptDependencies = false // <6>
+  includeBuildScriptDependencies = false // <5>
 }
 ----
 <1> Defines the location of the off-line repository root. Must be an absolute path, no relative path.
 <2> `repositories` in an implementation of http://gradle.org/docs/current/javadoc/org/gradle/api/artifacts/dsl/RepositoryHandler.html[RepositoryHandler]
   and therefore supports all the standard repository definitions a Gradle user would expect.
 <3> Ivy repositories in all incantantions available to Gradle is supported.
-<4> Flat directory support is planned, but not yet supported.
-<5> Restrict the configurations you would like to have added to the synchronisation process. If none are supplied,
+<4> Restrict the configurations you would like to have added to the synchronisation process. If none are supplied,
   dependencies from all configurations will be added.
-<6> Whether to add dependencies from `buildscript`. (See further down).
+<5> Whether to add dependencies from `buildscript`. (See further down).
 
 == Usage
 
@@ -110,10 +105,13 @@ this repository is a standard Ivy layout.
 repositories {
   ivy {
     url 'file:///path/to/repo' // <1>
+    layout 'gradle' // <2>
   }
 }
 ----
 <1> Define the path to the local repository here
+<2> The default layout is `gradle`. If this has been changed using `repoArtifactPattern` and `repoIvyPattern`, then
+  then `layout` should be set to whatever pattern is correct.
 
 == Boostrapping plugins in a restricted environment
 
@@ -154,6 +152,12 @@ NOTE: If this is not specified, the default layout which is known as 'gradle' wi
 In the 0.3.x and earlier releases the default layout will be `ivy`. The change was made because it was discovered that
 Gradle handles local Ivy repositories sligtly differently and that plugins such as `groovy`, `scala` and `jruby-gradle`
 which relies on finding a compiler jar in a certain named way failed when used with the local `ivy` layout.
+
+== Flat directories
+
+The `flatDir` repository supported by Gradle is not supported as it does not make sense. The purpose of this plugin is
+to cache remote repositories into a useable local repository. If a user already has a `flatDir` it does not need be be
+cached and if need be it can simply be copied.
 
 == Limitations
 
