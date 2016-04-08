@@ -15,7 +15,6 @@ jdk:
 
 os:
  - linux
- - osx
 
 env:
  - TERM=dumb
