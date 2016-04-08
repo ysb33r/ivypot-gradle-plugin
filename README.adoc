@@ -150,6 +150,9 @@ syncRemoteRepositories {
 }
 ----
 
+NOTE: If this is not specified, the default layout which known as 'ivy' will be used. As for the `0.4` release the
+default layout will be `gradle`.
+
 == Limitations
 
 * The resolution process cannot be fine-tuned at present - not to the level at least which is described
