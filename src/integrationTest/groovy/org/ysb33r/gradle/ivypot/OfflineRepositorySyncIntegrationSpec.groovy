@@ -96,8 +96,8 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
 
         expect:
         LOCALREPO.exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io.jar').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
     }
 
     @IgnoreIf({ OFFLINE })
@@ -132,7 +132,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
 
         expect:
         LOCALREPO.exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
         new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io-2.4.jar').exists()
     }
 
@@ -167,8 +167,8 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         project.tasks.syncRemoteRepositories.execute()
 
         expect:
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivys/ivy.xml').exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io.jar').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
     }
 
 
@@ -184,7 +184,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                 repositories {
                     ivy {
                         url LOCALREPO.toURI()
-                        layout 'ivy'
+                        layout 'gradle'
                     }
                 }
                 dependencies {

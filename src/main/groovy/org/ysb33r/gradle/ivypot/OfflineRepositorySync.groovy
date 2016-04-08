@@ -66,13 +66,13 @@ class OfflineRepositorySync extends DefaultTask {
      *
      */
     @Input
-    String repoArtifactPattern = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
+    String repoArtifactPattern = IvyArtifactRepository.GRADLE_ARTIFACT_PATTERN
 
     /** The pattern that will be used to write Ivy metafiles into the target repository
      *
      */
     @Input
-    String repoIvyPattern = IvyArtifactRepository.IVY_ARTIFACT_PATTERN
+    String repoIvyPattern = IvyArtifactRepository.GRADLE_ARTIFACT_PATTERN
 
     @Input
     boolean includeBuildScriptDependencies = false
