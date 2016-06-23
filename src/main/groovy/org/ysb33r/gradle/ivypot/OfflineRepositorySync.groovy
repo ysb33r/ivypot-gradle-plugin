@@ -91,10 +91,10 @@ class OfflineRepositorySync extends DefaultTask {
         this.repoRoot = repo
     }
 
-    /** If no configuratiosn were listed, returns all the configurations
+    /** If no configurations were listed, returns all the configurations
      *
      * @return A project configuration container with all of the named configurations. Does not
-     * return the {@code buildscript} configuration in here. THe latter is made available directly to
+     * return the {@code buildscript} configuration in here. The latter is made available directly to
      */
     @CompileDynamic
     ConfigurationContainer getConfigurations() {
