@@ -14,26 +14,14 @@
 
 // PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
 
-buildscript {
-    repositories {
-        jcenter()
-        mavenLocal()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.7"
-        classpath 'org.ysb33r.gradle:gradletest:0.5.5'
-        classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1'
-    }
-}
 
-apply plugin : 'groovy'
-apply plugin : 'maven'
-apply plugin : 'com.gradle.plugin-publish'
-apply plugin : 'com.github.hierynomus.license'
-apply plugin : 'org.ysb33r.gradletest'
+plugins {
+    id 'groovy'
+    id 'maven'
+    id 'com.gradle.plugin-publish' version '0.9.7'
+    id 'com.github.hierynomus.license' version '0.12.1'
+    id 'ort.ysb33r.gradletest' version '1.0'
+}
 
 apply from: 'gradle/integration-tests.gradle'
 
@@ -43,18 +31,6 @@ sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 
-plugins.withType(JavaPlugin) {
-
-    project.tasks.withType(JavaCompile) { task ->
-        task.sourceCompatibility = project.sourceCompatibility
-        task.targetCompatibility = project.targetCompatibility
-    }
-
-    project.tasks.withType(GroovyCompile) { task ->
-        task.sourceCompatibility = project.sourceCompatibility
-        task.targetCompatibility = project.targetCompatibility
-    }
-}
 
 repositories {
     jcenter()
@@ -64,11 +40,8 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.3', {
+    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4', {
         exclude module : 'groovy-all'
-    }
-    testCompile( 'com.athaydes:spock-reports:1.2.10' ) {
-        transitive = false // this avoids affecting your version of Groovy/Spock
     }
     testCompile 'org.slf4j:slf4j-api:1.7.13'
     testCompile 'org.slf4j:slf4j-simple:1.7.13'
@@ -89,8 +62,8 @@ license {
     mapping {
         groovy ='DOUBLESLASH_STYLE'
     }
-    ext.year = '2013-2015'
-    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md','**/*.properties'])
+    ext.year = '2013-2017'
+    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md','**/*.properties','**/*CompatibilitySpec.groovy'])
 }
 
 pluginBundle {
@@ -118,18 +91,11 @@ publishPlugins {
     onlyIf { !version.endsWith("SNAPSHOT") }
 }
 
-gradleLocations {
-    downloadToGradleUserHome = true
-}
-
 gradleTest {
-    versions '2.0'
-    versions '2.2'
-    versions '2.3'
-    versions '2.4'
-    versions '2.8'
-    versions '2.10'
-    versions '2.12', '2.13-rc-1'
+    versions '2.0', '2.2', '2.4', '2.8', '2.10'
+    versions '2.12', '2.14.1'
+    versions '3.0', '3.1', '3.5'
+    versions '4.0', '4.1', '4.2'
 
     inputs.files jar
     inputs.dir file('gradleTest')
