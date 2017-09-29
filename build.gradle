@@ -23,7 +23,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.0"
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.7"
         classpath 'org.ysb33r.gradle:gradletest:0.5.5'
         classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1'
     }
@@ -37,7 +37,7 @@ apply plugin : 'org.ysb33r.gradletest'
 
 apply from: 'gradle/integration-tests.gradle'
 
-version = '0.4'
+version = '0.5-SNAPSHOT'
 group = 'org.ysb33r.gradle'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
