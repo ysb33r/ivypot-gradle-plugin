@@ -14,6 +14,7 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
+import org.gradle.api.GradleException
 import org.gradle.api.artifacts.repositories.FlatDirectoryArtifactRepository
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
@@ -30,6 +31,10 @@ class BaseRepositoryFactory implements org.gradle.api.internal.artifacts.BaseRep
     @Override
     MavenArtifactRepository createMavenCentralRepository() {
         new MavenCentral()
+    }
+
+    MavenArtifactRepository createGoogleRepository() {
+        throw new GradleException('Google repositories are not supported as yet. Register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/22')
     }
 
     @Override

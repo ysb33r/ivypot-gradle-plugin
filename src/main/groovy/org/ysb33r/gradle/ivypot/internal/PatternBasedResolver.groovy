@@ -14,7 +14,6 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
-import org.apache.commons.lang.NotImplementedException
 import org.gradle.api.internal.artifacts.repositories.resolver.IvyResourcePattern
 import org.gradle.api.internal.artifacts.repositories.resolver.M2ResourcePattern
 import org.gradle.api.internal.artifacts.repositories.resolver.ResourcePattern
