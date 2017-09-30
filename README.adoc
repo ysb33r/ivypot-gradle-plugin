@@ -1,10 +1,13 @@
 = IvyPot - A Gradle plugin for Off-line Repositories
+:revnumber: 0.5
 
 Not all development teams have the luxury of relying on Maven Central, Bintray for day to day development. Some of them
 are still fortunate to proxy public repositories via in-house Artifactory or Nexus instances. Others have even more
 strict requirements including the ability to be able to build an isolated environment. This plugin is for them. It allows
 for pubic dependencies, including transitive dependencies, to be downloaded in a controlled manner and the internal
 security processes to be applied to the binary files before committing them to an internal storage area.
+
+As from 0.5 the minimum supported Gradle version in 2.8.
 
 == Previous versions
 
@@ -17,7 +20,18 @@ security processes to be applied to the binary files before committing them to a
 
 == Adding the plugin
 
-[source,groovy]
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+plugins {
+  id 'org.ysb33r.ivypot' version '{revnumber}'
+}
+----
+
+Or for special cases you might want to do
+
+.build.gradle
+[source,groovy,subs="+attributes"]
 ----
 buildscript {
   repositories {
@@ -26,16 +40,14 @@ buildscript {
       }
   }
   dependencies {
-    classpath 'org.ysb33r.gradle:ivypot:0.3.2'
+    classpath 'org.ysb33r.gradle:ivypot:{revnumber}'
   }
 }
 
 apply plugin : 'org.ysb33r.ivypot'
 ----
 
-or if you use Gradle 2.1+
-
-If you are in a restricted environment, you might want to use approach number #1 and conditionally add the remote reference
+If you are in a restricted environment, you might want to use the second approach and conditionally add the remote reference
 to work only when you are in a non-restricted environment. i.e.
 
 [source,groovy]
@@ -49,12 +61,7 @@ to work only when you are in a non-restricted environment. i.e.
   }
 ----
 
-[source,groovy]
-----
-plugins {
-  id 'org.ysb33r.ivypot' version '0.4'
-}
-----
+You might also consider using link:https://docs.gradle.org/current/userguide/plugins.html#customPluginRepositories[pluginManagement] in `settings.gradle` for this case.
 
 == Defining Remote Repositories
 

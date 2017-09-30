@@ -61,6 +61,20 @@ class MavenRepository implements MavenArtifactRepository, IvyXml, RepositoryTrai
      * @param urls The URLs.
      */
     @Override
+    void setArtifactUrls(Set<URI> urls) {
+        artifactUrls.clear()
+        artifactUrls.addAll(urls)
+    }
+
+    /**
+     * Sets the additional URLs to use to find artifact files. Note that these URLs are not used to find POM files.
+     *
+     * <p>The provided values are evaluated as per {@link org.gradle.api.Project#uri(Object)}. This means, for example, you can pass in a {@code File} object, or a relative path to be evaluated
+     * relative to the project directory.
+     *
+     * @param urls The URLs.
+     */
+    @Override
     void setArtifactUrls(Iterable<?> urls) {
         artifactUrls.clear()
         artifactUrls.addAll(urls)
