@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2015
+// (C) Copyright Schalk W. Cronje 2013-2017
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -24,7 +24,7 @@ import spock.lang.Specification
 class OfflineRepositoryPluginSpec extends Specification {
 
     void setupSpec() {
-        OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
+//        OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
     }
 
     def "Can the plugin be applied"() {

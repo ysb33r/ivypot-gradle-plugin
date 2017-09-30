@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2015
+// (C) Copyright Schalk W. Cronje 2013-2017
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -335,6 +335,5 @@ class OfflineRepositorySync extends DefaultTask {
         new DefaultRepositoryHandler(new BaseRepositoryFactory(), instantiator)
     }
 
-    @PackageScope
-    static boolean DONT_LOOK_FOR_IVY_JAR = false
+    static private boolean DONT_LOOK_FOR_IVY_JAR = System.getProperty('DONT_LOOK_FOR_IVY_JAR')
 }

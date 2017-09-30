@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2015
+// (C) Copyright Schalk W. Cronje 2013-2017
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -14,6 +14,7 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
+import org.gradle.api.GradleException
 import org.gradle.api.artifacts.repositories.FlatDirectoryArtifactRepository
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
@@ -30,6 +31,10 @@ class BaseRepositoryFactory implements org.gradle.api.internal.artifacts.BaseRep
     @Override
     MavenArtifactRepository createMavenCentralRepository() {
         new MavenCentral()
+    }
+
+    MavenArtifactRepository createGoogleRepository() {
+        throw new GradleException('Google repositories are not supported as yet. Register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/22')
     }
 
     @Override

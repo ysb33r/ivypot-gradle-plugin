@@ -1,34 +1,49 @@
 = CHANGELOG
+:issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 
-== 0.4 - Roadmap
+== 0.5 - Roadmap
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/12[Issue #12] - Make default layout 'gradle'.
+=== Bugs
+
+* {issue}28[#28] - Unable to create task extending org.ysb33r.gradle.ivypot.OfflineRepositorySync
+
+=== Breaking changes
+
+* Minimum supported version is Gradle 2.8
+
+=== Compatibility
+
+* Gradle compatibility tested 2.8 - 4.2
+
+== 0.4
+
+* {issue}12[#12] - Make default layout 'gradle'.
 
 == 0.3.7
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/10[Issue #11] - Patterns for writing artifacts is now configurable.
+* {issue}11[#11] - Patterns for writing artifacts is now configurable.
 
 == 0.3.6
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/10[Issue #10] - Fixes issues that was suppose to be fixed by https://github.com/ysb33r/ivypot-gradle-plugin/issues/8[Issue #9].
+* {issue}10[#10] - Fixes issues that was suppose to be fixed by {issue}9[#9].
 * Compatibility check up to Gradle 2.11
 
 == 0.3.5
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/8[Issue #9] - Cannot use pattern-based Ivy Resolver since Gradle 2.3.
+* {issue}9[#9] - Cannot use pattern-based Ivy Resolver since Gradle 2.3.
 
 == 0.3.4
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/8[Issue #8] - Transitive dependencies are not copied to local repository.
+* {issue}8[#8] - Transitive dependencies are not copied to local repository.
 
 == 0.3.3 (Avoid this release)
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/7[Issue #7] - When using two `OfflineRepositorySync` tasks, the build fails.
+* {issue}7[#7] - When using two `OfflineRepositorySync` tasks, the build fails.
 
 == 0.3.2
 
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/5[Issue #5] - Don't mix cache data with artifacts.
-* https://github.com/ysb33r/ivypot-gradle-plugin/issues/6[Issue #6] - Specifying ivy repositories with only a URL does not work.
+* {issue}5[#5] - Don't mix cache data with artifacts.
+* {issue}6[#6] - Specifying ivy repositories with only a URL does not work.
 
 == 0.3.1
 

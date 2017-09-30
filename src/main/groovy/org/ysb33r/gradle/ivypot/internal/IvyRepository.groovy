@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2015
+// (C) Copyright Schalk W. Cronje 2013-2017
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -14,14 +14,17 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
-import groovy.transform.TypeChecked
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import org.gradle.api.Action
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.IvyArtifactRepositoryMetaDataProvider
+import org.gradle.api.artifacts.repositories.RepositoryLayout
 import org.ysb33r.gradle.ivypot.IvyXml
 
 /**
- * @author Schalk W. Cronjé
  */
+@CompileStatic
 class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
 
     String artifactPattern
@@ -41,7 +44,7 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      */
     @Override
     void artifactPattern(String pattern) {
-        this.artifactPattern += pattern
+        this.artifactPattern+= pattern
     }
 
     /**
@@ -66,7 +69,6 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      * @param layoutName The name of the layout to use.
      */
     @Override
-    @TypeChecked
     void layout(final String layoutName) {
         final String namespace = 'org.gradle.api.internal.artifacts.repositories.layout.'
         String repositoryLayoutName
@@ -93,7 +95,7 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
             }
         }
 
-        repositoryLayout =  layoutClass.newInstance()
+        setLayoutClass(layoutClass)
     }
 
     /**
@@ -146,9 +148,21 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
     @Override
     void layout(String layoutName, Closure config) {
         layout(layoutName)
-        def cfg = config.clone()
+        Closure cfg = (Closure)(config.clone())
         cfg.delegate = repositoryLayout
         cfg()
+    }
+
+    /** Specifies how the items of the repository are organized.
+     *
+     * @param layoutName The name of the layout to use.
+     * @param action The action used to configure the layout. Takes a {@code RepositoryLayout} as parameter.
+     *
+     * @since 0.5
+     */
+    void layout(String layoutName, Action<? extends RepositoryLayout> action) {
+        layout(layoutName)
+        action.execute(repositoryLayout)
     }
 
     /**
@@ -173,8 +187,8 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
             throw new UnsupportedOperationException('layout has not seen set for Ivy repository')
         }
 
-        def patterns = new PatternBasedResolver()
-        repositoryLayout.apply(url, patterns)
+        PatternBasedResolver patterns = new PatternBasedResolver()
+        applyPatterns(patterns)
 
         String ret = "<url name='${name}' m2compatible='${patterns.m2compatible ? 'true' : 'false'}'>"
         patterns.ivyPatterns.each {
@@ -186,5 +200,24 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
         ret += '</url>'
     }
 
-    private def repositoryLayout
+//    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass) {
+//        throw new GradleException("Metadata is not implemented. If this is a requirement for your use case then register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/23")
+//    }
+//
+//    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass, Action<? super ActionConfiguration> action) {
+//        throw new GradleException("Metadata is not implemented. If this is a requirement for your use case then register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/23")
+//    }
+
+    @CompileDynamic
+    private void applyPatterns(final PatternBasedResolver patterns) {
+        repositoryLayout.apply(url, patterns)
+    }
+
+    @CompileDynamic
+    private void setLayoutClass(Class layoutClass) {
+        repositoryLayout =  layoutClass.newInstance()
+    }
+
+    private RepositoryLayout repositoryLayout
+
 }

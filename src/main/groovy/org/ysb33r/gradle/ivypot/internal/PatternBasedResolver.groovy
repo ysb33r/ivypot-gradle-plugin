@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2015
+// (C) Copyright Schalk W. Cronje 2013-2017
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -14,7 +14,6 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
-import org.apache.commons.lang.NotImplementedException
 import org.gradle.api.internal.artifacts.repositories.resolver.IvyResourcePattern
 import org.gradle.api.internal.artifacts.repositories.resolver.M2ResourcePattern
 import org.gradle.api.internal.artifacts.repositories.resolver.ResourcePattern
