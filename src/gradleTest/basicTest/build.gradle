@@ -1,9 +1,3 @@
-buildscript {
-    dependencies {
-        classpath 'org.ysb33r.gradle:ivypot:%%VERSION%%'
-    }
-}
-
 apply plugin : 'org.ysb33r.ivypot'
 
 configurations {

@@ -118,4 +118,8 @@ gradleTest {
 
     inputs.files jar
     inputs.dir file('gradleTest')
+
+    beforeTest {
+        println "  ${it.name}"
+    }
 }
