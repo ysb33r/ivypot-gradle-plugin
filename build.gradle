@@ -107,7 +107,9 @@ pluginBundle {
 }
 
 publishPlugins {
+    group 'release'
     onlyIf { !version.endsWith("SNAPSHOT") }
+    mustRunAfter build
 }
 
 gradleTest {
@@ -122,4 +124,10 @@ gradleTest {
     beforeTest {
         println "  ${it.name}"
     }
+}
+
+task release {
+    group 'release'
+    description 'Life-cycle task for relasing the plugin'
+    dependsOn build publishPlugins
 }
