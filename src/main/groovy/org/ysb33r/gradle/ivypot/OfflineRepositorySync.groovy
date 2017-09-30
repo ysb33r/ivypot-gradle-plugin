@@ -335,6 +335,5 @@ class OfflineRepositorySync extends DefaultTask {
         new DefaultRepositoryHandler(new BaseRepositoryFactory(), instantiator)
     }
 
-    @PackageScope
-    static boolean DONT_LOOK_FOR_IVY_JAR = false
+    static private boolean DONT_LOOK_FOR_IVY_JAR = System.getProperty('DONT_LOOK_FOR_IVY_JAR')
 }
