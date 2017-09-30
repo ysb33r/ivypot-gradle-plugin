@@ -11,6 +11,7 @@ As from 0.5 the minimum supported Gradle version in 2.8.
 
 == Previous versions
 
+* https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_4_0[Release 0.4.0]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_7[Release 0.3.7]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_6[Release 0.3.6]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_5[Release 0.3.5]
