@@ -21,7 +21,11 @@ sourceSets {
 }
 
 task integrationTest(type: Test, dependsOn: jar) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    if(GradleVersion.current() < GradleVersion.version('4.0')) {
+        testClassesDir = sourceSets.integrationTest.output.classesDir
+    } else {
+        testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    }
     classpath = sourceSets.integrationTest.runtimeClasspath
     mustRunAfter test
 }

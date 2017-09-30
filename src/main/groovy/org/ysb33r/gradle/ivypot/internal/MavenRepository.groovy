@@ -60,7 +60,7 @@ class MavenRepository implements MavenArtifactRepository, IvyXml, RepositoryTrai
      *
      * @param urls The URLs.
      */
-    @Override
+//    @Override
     void setArtifactUrls(Set<URI> urls) {
         artifactUrls.clear()
         artifactUrls.addAll(urls)
