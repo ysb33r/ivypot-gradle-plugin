@@ -1,0 +1,7 @@
+include 'sync'
+include 'proj1'
+include 'proj2'
+include 'proj2_proj2-1'
+project(':proj2_proj2-1').projectDir = file('proj2/proj2-1')
+include 'proj2_proj2-2'
+project(':proj2_proj2-2').projectDir = file('proj2/proj2-2')

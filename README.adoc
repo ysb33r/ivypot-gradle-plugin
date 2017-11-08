@@ -1,5 +1,5 @@
 = IvyPot - A Gradle plugin for Off-line Repositories
-:revnumber: 0.5
+:revnumber: 0.6
 
 Not all development teams have the luxury of relying on Maven Central, Bintray for day to day development. Some of them
 are still fortunate to proxy public repositories via in-house Artifactory or Nexus instances. Others have even more
@@ -11,6 +11,7 @@ As from 0.5 the minimum supported Gradle version in 2.8.
 
 == Previous versions
 
+* https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_5_0[Release 0.5.0]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_4_0[Release 0.4.0]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_7[Release 0.3.7]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_3_6[Release 0.3.6]
@@ -140,6 +141,48 @@ buildscript {
 ----
 <1> Define the path to the local repository here
 
+== Multi-project support
+
+The best way to cache dependencies off-line for a multi-project is to create a special subproject just for synchronisation.
+
+
+.build.gradle
+[source,groovy,subs="+attributes"]
+----
+plugins {
+  id 'org.ysb33r.ivypot' version '{revnumber}' apply false
+}
+
+allprojects {
+    ext {
+        offlineRepoDir = "${rootProject.projectDir}/repo"
+    }
+}
+----
+
+.sync/build.gradle
+[source,groovy,subs="+attributes"]
+----
+apply plugin : 'org.ysb33r.ivypot'
+
+syncRemoteRepositories {
+
+    addAllProjects() // <1>
+
+    addProject ':a:b'  // <2>
+
+    addProject ':a:b','compile','testCompile'  // <3>
+}
+----
+<1> Adds all configurations from all subprojects and the rootproject with the exception of the current project. `buildscript` dependencies are not added via this call.
+<2> Adds all configurations from project `:a:b` as long as the current project is not called `:a:b`.
+<3> Adds only the `compile` and `testCompile` configurations from project `:a:b`. Once again `:a:b` must not be the current project.
+
+Now you just have to run `./gradlew syncRemoteRepositories` or `./gradlew :sync:syncRemoteRepositories` from the top.
+
+NOTE: Also see `src/gradleTest/multiProject` as an example of how this works. (That's actually the compability test we use for multi-projects).
+
+
 == Adding buildscript dependencies
 
 By default buildscript dependencies will not be added to the synchronisation list. By setting `includeBuildScriptDependencies = true` in
@@ -174,5 +217,5 @@ cached and if need be it can simply be copied.
 
 * The resolution process cannot be fine-tuned at present - not to the level at least which is described
   in http://gradle.org/docs/current//userguide/dependency_management.html#sec:ivy_repositories.
-* There are some limitations in Apache Ivy where Maven repositories that redirect artifacts to a different URL
-  will cause failures. A known case are Ruby Gems. There is currently no known workaround.
+* There are some limitations in Apache Ivy where Maven repositories that redirect artifacts to a different URL will cause failures. A known case are Ruby Gems. There is currently no known workaround.
+* It is not possible to cache plugins that are specified in the `plugins` block.  The current workaround is to create a configuration which lists the plugins and their versions and then cache that to the local repository.

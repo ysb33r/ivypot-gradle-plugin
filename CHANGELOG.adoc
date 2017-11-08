@@ -1,11 +1,23 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 
-== 0.5 - Roadmap
+== 0.6 - Roadmap
+
+* {issues}28[#28] - Simplify multi-project support
+
+=== Breaking changes
+
+* If `includeBuildScriptDependencies` is set, it will only look for those dependencies in the root project.
+
+=== Compatibility
+
+* Gradle compatibility tested 2.8 - 4.3.1
+
+== 0.5
 
 === Bugs
 
-* {issue}28[#28] - Unable to create task extending org.ysb33r.gradle.ivypot.OfflineRepositorySync
+* {issue}20[#20] - Unable to create task extending org.ysb33r.gradle.ivypot.OfflineRepositorySync
 
 === Breaking changes
 
