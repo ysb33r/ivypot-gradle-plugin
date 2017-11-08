@@ -23,8 +23,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
@@ -36,15 +36,11 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.FileUtils
 import org.gradle.internal.reflect.DirectInstantiator
 import org.gradle.internal.reflect.Instantiator
-import org.gradle.util.CollectionUtils
 import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
+import org.ysb33r.grolifant.api.StringUtils
 
 @CompileStatic
 class OfflineRepositorySync extends DefaultTask {
-
-
-    private static final String LOCALREPONAME = '~~~local~~~repo~~~'
-    private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
 
     @CompileDynamic
     OfflineRepositorySync() {
@@ -60,6 +56,10 @@ class OfflineRepositorySync extends DefaultTask {
             classpath : ivyJar
 
         repositories = createRepositoryHandler(project.gradle)
+
+        inputs.properties.put('project configurations', {
+            this.projectConfigurations
+        })
     }
 
     /** The pattern that will be used to write artifacts into the target repository
@@ -74,6 +74,9 @@ class OfflineRepositorySync extends DefaultTask {
     @Input
     String repoIvyPattern = IvyArtifactRepository.GRADLE_ARTIFACT_PATTERN
 
+    /** Include buildscript dependencies from the root project.
+     *
+     */
     @Input
     boolean includeBuildScriptDependencies = false
 
@@ -91,24 +94,20 @@ class OfflineRepositorySync extends DefaultTask {
         this.repoRoot = repo
     }
 
+
     /** If no configurations were listed, returns all the configurations
      *
      * @return A project configuration container with all of the named configurations. Does not
      * return the {@code buildscript} configuration in here. The latter is made available directly to
      */
-    @CompileDynamic
-    ConfigurationContainer getConfigurations() {
-        ConfigurationContainer cc
-        if(this.configurations) {
-            List<String> names = CollectionUtils.stringize(this.configurations)
-            cc = project.configurations.matching { Configuration it ->
-                names.contains(it.name)
-            } as ConfigurationContainer
-        } else {
-            cc = project.configurations
+    Set<Configuration> getConfigurations() {
+        Set<Configuration> configurationSet= []
+        projectConfigurations.collect { Project p, List<Object> configs ->
+            configurationSet.addAll(getConfigurationsFor(p,configs))
         }
 
-        return cc
+        configurationSet.addAll(getConfigurationsFor(project,this.configurations))
+        configurationSet
     }
 
     /** Clears the current list of configurations and assigns a new list
@@ -126,6 +125,78 @@ class OfflineRepositorySync extends DefaultTask {
      */
     void configurations(Object... names) {
         this.configurations.addAll(names as List)
+    }
+
+    /** Adds configurations from all projects except the current one
+     *
+     * <p> Any existing project configurations (except the current project) will be replaced.
+     */
+    void addAllProjects() {
+        addConfigurationsRecursivelyFrom(project.rootProject)
+    }
+
+    /** Adds all of the configurations for a project.
+     *
+     * <p> If the project has been added previously, the existing list of configurations will be
+     * overriden by this one.
+     *
+     * @param p Project for which all configuratiosn needs to be added. If it is the current project
+     * and exception will be thrown.
+     * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
+     */
+    void addProject(final Project p) {
+        if(p == project) {
+            throw new CannotUseCurrentProjectException('The current project cannot be added in this way. Use configurations instead',p)
+        } else {
+            projectConfigurations[p] = []
+        }
+    }
+
+    /** Adds all of the configurations for a project.
+     *
+     * <p> If the project has been added previously, the existing list of configurations will be
+     * overriden by this one.
+     *
+     * @param s Project name for which all configurations needs to be added. If it is the current project
+     * and exception will be thrown.
+     * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
+     */
+    void addProject(final String s) {
+        addProject(project.findProject(s))
+    }
+
+    /* Adds one or more configurations from a given project.
+     *
+     * <p> If the project has been added previously, the existing list of configurations will be
+     * overriden by this one.
+     *
+     * @param p Project for configurations needs to be added
+     * @param config1 First configuration from project
+     * @param configs Remainder of configurations from project
+     * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
+     */
+    void addProject(final Project p, Object config1, Object... configs) {
+        if(p == project) {
+            throw new CannotUseCurrentProjectException('The current project cannot be added in this way. Use configurations instead',p)
+        } else {
+            final List<Object> cfg = [config1]
+            cfg.addAll(configs)
+            projectConfigurations[p] = cfg
+        }
+    }
+
+    /* Adds one or more configurations from a given project.
+     *
+     * <p> If the project has been added previously, the existing list of configurations will be
+     * overriden by this one.
+     *
+     * @param p Project for configurations needs to be added
+     * @param config1 First configuration from project
+     * @param configs Remainder of configurations from project
+     * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
+     */
+    void addProject(final String s, Object config1, Object... configs) {
+        addProject(project.findProject(s),config1,configs)
     }
 
     /** Adds remote repositories as per Gradle convention.
@@ -148,25 +219,22 @@ class OfflineRepositorySync extends DefaultTask {
         this.repositories
     }
 
-    /** Obtains a list of all the dependencies contained within
+    /** Obtains a list of all the external module dependencies contained within
      * the provided configurations
      *
      * @return A set of all the dependencies
      */
-    @CompileDynamic
     Set<Dependency> getDependencies() {
-        Set<Dependency> deps = []
+        final Set<Dependency> deps = []
 
         getConfigurations().each { Configuration cfg ->
-            cfg.allDependencies.all {
-                deps.add(it)
-            }
+            deps.addAll(getExternalModuleDependencies(cfg))
         }
 
         if(includeBuildScriptDependencies) {
-            project.buildscript.configurations.classpath.allDependencies.all {
-                deps.add(it)
-            }
+            deps.addAll(getExternalModuleDependencies(
+                project.rootProject.buildscript.configurations.getByName('classpath')
+            ))
         }
 
         deps
@@ -263,7 +331,6 @@ class OfflineRepositorySync extends DefaultTask {
      }
 
     @PackageScope
-//    @CompileDynamic
     void setAntLogLevel() {
         if(ivyAnt) {
             org.apache.tools.ant.Project localRef = ivyAnt.project
@@ -290,11 +357,6 @@ class OfflineRepositorySync extends DefaultTask {
             }
         }
     }
-
-    private Object repoRoot
-    private List<Object> configurations = []
-    private RepositoryHandler repositories
-    private AntBuilder ivyAnt
 
     /** Returns the JAR path to be used for loading IVY.
      *
@@ -335,5 +397,46 @@ class OfflineRepositorySync extends DefaultTask {
         new DefaultRepositoryHandler(new BaseRepositoryFactory(), instantiator)
     }
 
-    static private boolean DONT_LOOK_FOR_IVY_JAR = System.getProperty('DONT_LOOK_FOR_IVY_JAR')
+    private void addConfigurationsRecursivelyFrom(final Project p) {
+
+        if( p != project ) {
+            projectConfigurations[p] = []
+        }
+
+        p.childProjects.each { final String name, final Project child ->
+            addConfigurationsRecursivelyFrom(child)
+        }
+    }
+
+    // Given a project and associated list of configs returns the config objects
+    // if configs is null or empty all configurations will be returned.
+    private Iterable<Configuration> getConfigurationsFor(final Project p, Iterable<Object> configs) {
+        if(!configs || configs.size()<1) {
+            p.configurations
+        } else {
+            configs.collect { Object config ->
+                if(config instanceof Configuration) {
+                    (Configuration)config
+                } else {
+                    p.configurations.getByName(StringUtils.stringize(config))
+                }
+            }
+        }
+    }
+
+    private Iterable<Dependency> getExternalModuleDependencies(final Configuration configuration) {
+        configuration.allDependencies.findAll { Dependency dep ->
+            dep instanceof ExternalModuleDependency
+        }
+    }
+
+    private Object repoRoot
+    private final RepositoryHandler repositories
+    private final AntBuilder ivyAnt
+    private final List<Object> configurations = []
+    private final Map<Project,List<Object> > projectConfigurations = [:]
+
+    private static final String LOCALREPONAME = '~~~local~~~repo~~~'
+    private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'
+    private static boolean DONT_LOOK_FOR_IVY_JAR = System.getProperty('DONT_LOOK_FOR_IVY_JAR')
 }

@@ -20,7 +20,7 @@ import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
 import org.gradle.api.artifacts.repositories.PasswordCredentials
-import org.ysb33r.gradle.olifant.UriUtils
+import org.ysb33r.grolifant.api.UriUtils
 
 /**
  *

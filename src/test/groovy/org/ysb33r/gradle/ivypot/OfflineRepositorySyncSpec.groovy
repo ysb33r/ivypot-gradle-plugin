@@ -15,6 +15,7 @@
 package org.ysb33r.gradle.ivypot
 
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.testfixtures.ProjectBuilder
@@ -37,7 +38,7 @@ class OfflineRepositorySyncSpec extends Specification {
         syncTask = project.tasks.create('syncTask',OfflineRepositorySync)
     }
 
-    def "Setting up repositories" () {
+    void "Setting up repositories" () {
 
         given:
         project.allprojects {
@@ -178,7 +179,7 @@ class OfflineRepositorySyncSpec extends Specification {
         //and: 'a flatDir repo can be added'
     }
 
-    def "Not specifying a configuration, means all configurations are loaded"() {
+    void "Not specifying a configuration, means all configurations are loaded"() {
         given:
         project.allprojects {
             syncTask {
@@ -190,15 +191,15 @@ class OfflineRepositorySyncSpec extends Specification {
                 config2
             }
         }
-        ConfigurationContainer configs = syncTask.configurations
+        Iterable<Configuration> configs = syncTask.configurations
 
         expect:
-        configs.getByName('config1') != null
-        configs.getByName('config2') != null
+        getConfiguration(configs,'config1') != null
+        getConfiguration(configs,'config2') != null
         configs.size() == 2
     }
 
-    def "Specifying configurations means only those are added"() {
+    void "Specifying configurations means only those are added"() {
         given:
         project.allprojects {
             syncTask {
@@ -210,17 +211,57 @@ class OfflineRepositorySyncSpec extends Specification {
                 config2
             }
         }
-        ConfigurationContainer configs = syncTask.configurations
 
         when:
-        configs.getByName('config2') != null
+        Iterable<Configuration> configs = syncTask.configurations
 
         then:
-        thrown(org.gradle.api.UnknownDomainObjectException)
+        getConfiguration(configs,'config2') == null
 
         and:
-        configs.getByName('config1') != null
+        getConfiguration(configs,'config1') != null
         configs.size() == 1
     }
 
+    void "Configurations can be added by instance"() {
+        project.allprojects {
+            configurations {
+                config1
+                config2
+            }
+            syncTask {
+                configurations project.configurations.getByName('config1')
+            }
+
+        }
+
+        when:
+        Iterable<Configuration> configs = syncTask.configurations
+
+        then:
+        getConfiguration(configs,'config2') == null
+
+        and:
+        getConfiguration(configs,'config1') != null
+        configs.size() == 1
+
+    }
+
+    void "Cannot use existing project in alls to addProject"() {
+        when:
+        project.allprojects {
+            syncTask {
+                addProject project
+            }
+        }
+
+        then:
+        thrown(CannotUseCurrentProjectException)
+    }
+
+    private getConfiguration(final Iterable<Configuration> configs,final String name) {
+        configs.find {
+            it.name == name
+        }
+    }
 }
