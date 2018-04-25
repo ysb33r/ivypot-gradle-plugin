@@ -17,6 +17,8 @@ package org.ysb33r.gradle.ivypot.internal
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
+import org.gradle.api.ActionConfiguration
+import org.gradle.api.artifacts.ComponentMetadataSupplier
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.artifacts.repositories.IvyArtifactRepositoryMetaDataProvider
 import org.gradle.api.artifacts.repositories.RepositoryLayout
@@ -176,6 +178,14 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
         return null
     }
 
+    @Override
+    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass) {
+    }
+
+    @Override
+    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass, Action<? super ActionConfiguration> action) {
+    }
+
     /** Returns a XML snippet suitable for including in the resolvers section
      *
      * @return
@@ -199,14 +209,6 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
         }
         ret += '</url>'
     }
-
-//    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass) {
-//        throw new GradleException("Metadata is not implemented. If this is a requirement for your use case then register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/23")
-//    }
-//
-//    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass, Action<? super ActionConfiguration> action) {
-//        throw new GradleException("Metadata is not implemented. If this is a requirement for your use case then register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/23")
-//    }
 
     @CompileDynamic
     private void applyPatterns(final PatternBasedResolver patterns) {

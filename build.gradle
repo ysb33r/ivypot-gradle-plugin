@@ -113,10 +113,9 @@ publishPlugins {
 }
 
 gradleTest {
-    versions '2.8', '2.10'
-    versions '2.12', '2.14.1'
-    versions '3.0', '3.1', '3.5'
-    versions '4.0', '4.2.1', '4.3.1'
+    versions '4.0.2', '4.1', '4.2.1'
+    versions '4.3.1', '4.4.1', '4.5'
+    versions '4.6', '4.7'
 
     inputs.files jar
     inputs.dir file('gradleTest')
@@ -128,6 +127,6 @@ gradleTest {
 
 task release {
     group 'release'
-    description 'Life-cycle task for relasing the plugin'
+    description 'Life-cycle task for releasing the plugin'
     dependsOn build, publishPlugins
 }

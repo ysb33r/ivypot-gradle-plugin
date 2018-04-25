@@ -36,6 +36,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.FileUtils
 import org.gradle.internal.reflect.DirectInstantiator
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.util.GradleVersion
 import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
 import org.ysb33r.grolifant.api.StringUtils
 
@@ -57,9 +58,20 @@ class OfflineRepositorySync extends DefaultTask {
 
         repositories = createRepositoryHandler(project.gradle)
 
-        inputs.properties.put('project configurations', {
-            this.projectConfigurations
-        })
+        if(GradleVersion.current() < GradleVersion.version('4.0')) {
+            inputs.properties.put('project configurations', { ->
+                this.projectConfigurations
+            })
+        } else {
+            inputs.property('project configurations', { OfflineRepositorySync ors ->
+                Set<Configuration> configs = ors.getConfigurations()
+                configs.collect { Configuration c ->
+                    c.dependencies.collect { Dependency d ->
+                        "${d.group}:${d.name}:${d.version}"
+                    }.join(',')
+                }.join('|')
+            }.curry(this))
+        }
     }
 
     /** The pattern that will be used to write artifacts into the target repository
@@ -204,9 +216,8 @@ class OfflineRepositorySync extends DefaultTask {
      * @param repoConfigurator A closure that is suitable to delegate to a {@code RepositoryHandler}
      * object
      */
-    @CompileDynamic
     void repositories(Closure repoConfigurator) {
-        def configurator = repoConfigurator.clone()
+        Closure configurator = (Closure)(repoConfigurator.clone())
         configurator.delegate = this.repositories
         configurator()
     }

@@ -34,7 +34,7 @@ class BaseRepositoryFactory implements org.gradle.api.internal.artifacts.BaseRep
     }
 
     MavenArtifactRepository createGoogleRepository() {
-        throw new GradleException('Google repositories are not supported as yet. Register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/22')
+        new Google()
     }
 
     @Override

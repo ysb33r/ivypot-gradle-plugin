@@ -3,7 +3,11 @@
 
 == 0.7 - Roadmap
 
-*TBD*
+* {issue}22[#22] - Support Google repositories.
+
+=== Compatibility
+
+* Gradle compatibility tested 4.0 - 4.7
 
 == 0.6
 
