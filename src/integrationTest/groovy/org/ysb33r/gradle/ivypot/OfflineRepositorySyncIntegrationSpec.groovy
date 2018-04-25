@@ -251,5 +251,40 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         new File(LOCALREPO, 'rubygems/colorize/0.7.7/gems/colorize.gem').exists()
     }
 
+    @IgnoreIf({ OFFLINE })
+    def "Can we sync from Google?"() {
+
+        given:
+        def pathToLocalRepo = LOCALREPO
+
+        project.allprojects {
+
+            configurations {
+                compile
+            }
+
+            // tag::example_jcenter[]
+            dependencies {
+                compile 'com.android.support.constraint:constraint-layout:1.0.2'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    google()
+                }
+
+                repoRoot "${pathToLocalRepo}"
+            }
+            // end::example_jcenter[]
+        }
+
+        project.evaluate()
+        project.tasks.syncRemoteRepositories.execute()
+
+        expect:
+        LOCALREPO.exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
+        new File(LOCALREPO, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
+    }
 
 }

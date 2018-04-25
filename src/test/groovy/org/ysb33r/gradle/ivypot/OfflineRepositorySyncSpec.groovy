@@ -53,6 +53,7 @@ class OfflineRepositorySyncSpec extends Specification {
                     mavenCentral()
                     mavenLocal()
                     jcenter()
+                    google()
 
                     maven {
                         url 'http://foo.com/bar'
@@ -97,6 +98,7 @@ class OfflineRepositorySyncSpec extends Specification {
                         }
                     }
 
+
 //                    flatDir {
 //                        dirs
 //                    }
@@ -115,6 +117,7 @@ class OfflineRepositorySyncSpec extends Specification {
         def ivyGradle=  syncTask.repositories.getByName('ivy2')
         def ivyIvy=     syncTask.repositories.getByName('ivy3')
         def ivyPattern= syncTask.repositories.getByName('ivy4')
+        def google=     syncTask.repositories.getByName('Google')
 
         expect: 'Local repo has been set'
         syncTask.repoRoot == project.file('/path/to/folder')
@@ -175,6 +178,9 @@ class OfflineRepositorySyncSpec extends Specification {
             "<ivy pattern='http://pat/tern/foo/ivy.xml'/>" +
             "<artifact pattern='http://pat/tern/[artifact].[ext]'/>" +
             '</url>'
+
+        and: 'google was loaded'
+        google.resolverXml() == '''<ibiblio name="Google" root="https://dl.google.com/dl/android/maven2/" m2compatible="true"/>'''
 
         //and: 'a flatDir repo can be added'
     }

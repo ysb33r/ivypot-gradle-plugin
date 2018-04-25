@@ -1,6 +1,14 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 
+== 0.7 - Roadmap
+
+* {issue}22[#22] - Support Google repositories.
+
+=== Compatibility
+
+* Gradle compatibility tested 4.0 - 4.7
+
 == 0.6
 
 * {issue}28[#28] - Simplify multi-project support
