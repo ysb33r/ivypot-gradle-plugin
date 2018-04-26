@@ -1,7 +1,7 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 
-== 0.7 - Roadmap
+== 0.7
 
 * {issue}22[#22] - Support Google repositories.
 
