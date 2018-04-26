@@ -123,6 +123,8 @@ gradleTest {
     beforeTest {
         println "  ${it.name}"
     }
+
+    gradleArguments '-g', "${buildDir}/gradleTest/userHome"
 }
 
 task release {
