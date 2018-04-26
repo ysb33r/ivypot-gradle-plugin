@@ -24,7 +24,7 @@ import org.gradle.util.GradleVersion
  */
 class OfflineRepositoryPlugin implements Plugin<Project> {
 
-    final static String MINIMUM_GRADLE = '2.8'
+    final static String MINIMUM_GRADLE = '4.0'
 
     void apply(Project project) {
 
