@@ -12,8 +12,8 @@
 // ============================================================================
 //
 
-// PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
 
+// PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
 
 plugins {
     id 'groovy'
@@ -25,7 +25,7 @@ plugins {
 
 apply from: 'gradle/integration-tests.gradle'
 
-version = '0.7'
+version = '0.8-SNAPSHOT'
 group = 'org.ysb33r.gradle'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -124,7 +124,9 @@ gradleTest {
         println "  ${it.name}"
     }
 
-    gradleArguments '-g', "${buildDir}/gradleTest/userHome"
+    if(!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        gradleArguments '-g', file("${buildDir}/gradleTest/userHome").absolutePath
+    }
 }
 
 task release {
