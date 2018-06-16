@@ -26,7 +26,7 @@ plugins {
 
 apply from: 'gradle/integration-tests.gradle'
 
-version = '0.8'
+version = '0.9-SNAPSHOT'
 group = 'org.ysb33r.gradle'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
