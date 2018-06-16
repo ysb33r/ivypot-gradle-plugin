@@ -25,6 +25,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
@@ -284,10 +285,11 @@ class OfflineRepositorySync extends DefaultTask {
     @PackageScope
     @CompileDynamic
     void ivyInstall( Dependency dep, boolean overwrite ) {
+
         ivyAnt."${name}Resolve" (
             inline : true,
             organisation: dep.group, module: dep.name, revision: dep.version,
-            transitive:true,
+            transitive: dep instanceof ModuleDependency ? ((ModuleDependency)dep).transitive : true,
             type : '*',
             conf : '*'
         )
@@ -327,12 +329,6 @@ class OfflineRepositorySync extends DefaultTask {
                 }
             }
         }
-
-//        xml+="""<resolvers>
-//            <filesystem name="${LOCALREPONAME}">
-//                <ivy pattern="${repoRoot}/${repoIvyPattern}"/>
-//                <artifact pattern="${artifactPattern}"/>
-//            </filesystem><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
 
         xml+="""<resolvers><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
 

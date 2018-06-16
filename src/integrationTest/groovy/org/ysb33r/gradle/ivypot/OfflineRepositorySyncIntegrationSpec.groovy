@@ -101,6 +101,43 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
     }
 
     @IgnoreIf({ OFFLINE })
+    def "Honour non-transitive dependencies"() {
+
+        given:
+        def pathToLocalRepo = LOCALREPO
+
+        project.allprojects {
+
+            configurations {
+                compile
+            }
+
+            dependencies {
+                compile 'junit:junit:4.12', {
+                    transitive = false
+                }
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    mavenCentral()
+                }
+
+                repoRoot "${pathToLocalRepo}"
+            }
+        }
+
+        project.evaluate()
+        project.tasks.syncRemoteRepositories.execute()
+
+        expect:
+        LOCALREPO.exists()
+        new File(LOCALREPO, 'junit/junit/4.12/ivy-4.12.xml').exists()
+        new File(LOCALREPO, 'junit/junit/4.12/junit-4.12.jar').exists()
+        !new File(LOCALREPO, 'org.hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar').exists()
+    }
+
+    @IgnoreIf({ OFFLINE })
     def "Can we sync from mavenCentral using a different local artifactPattern?"() {
 
         given:

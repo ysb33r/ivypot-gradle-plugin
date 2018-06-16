@@ -14,13 +14,14 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
+import groovy.transform.CompileStatic
 import groovy.transform.TupleConstructor
 import org.gradle.api.artifacts.repositories.PasswordCredentials
 
 /**
- * @author Schalk W. Cronjé
  */
 @TupleConstructor
+@CompileStatic
 class Credentials implements PasswordCredentials {
     String username
     String password
