@@ -1,3 +1,4 @@
+apply plugin : 'base'
 apply plugin : 'org.ysb33r.ivypot'
 
 configurations {
@@ -57,5 +58,5 @@ task syncRemoteRepositories3 ( type : org.ysb33r.gradle.ivypot.OfflineRepository
 }
 
 task runGradleTest {
-    dependsOn syncRemoteRepositories, syncRemoteRepositories2, syncRemoteRepositories3
+    dependsOn clean, syncRemoteRepositories, syncRemoteRepositories2, syncRemoteRepositories3
 }

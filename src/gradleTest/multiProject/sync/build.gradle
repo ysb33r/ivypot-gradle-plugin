@@ -1,34 +1,10 @@
 apply plugin : "org.ysb33r.ivypot"
 
-//ext {
-//  thisProject = project.name
-//  addConfigurationsFor = { Project forProj ->
-//    if( forProj != project ) {
-//      forProj.configurations.each { Configuration c->
-//        logger.info "${forProj.name}: ${c.name}"
-//        String configName = "${forProj.name}_${c.name}_deps"
-//        project.configurations.create configName
-//        project.syncRemoteRepositories.configurations configName
-//        c.dependencies.each { Dependency d ->
-//          if (!(d instanceof ProjectDependency)) {
-//            logger.info "Found ${d} in ${forProj.name}. Adding to ${configName}"
-//            project.dependencies.add configName, d
-//          }
-//        }
-//      }
-//      forProj.childProjects.each { String projName, Project p ->
-//        addConfigurationsFor(p)
-//      }
-//    }
-//  }
-//}
-//
-//addConfigurationsFor(rootProject)
-
 syncRemoteRepositories {
   repoRoot = repoDir
 
   repositories {
+    mavenCentral()
     jcenter()
   }
 
