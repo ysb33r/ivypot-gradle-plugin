@@ -14,7 +14,6 @@
 
 
 // PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
-import org.gradle.util.GradleVersion
 
 plugins {
     id 'groovy'
@@ -34,7 +33,7 @@ targetCompatibility = 1.8
 
 ext {
     groovyLongVer = GroovySystem.version
-    groovyShortVer = GroovySystem.version.replaceAll(/\.\d+$/,'')
+    groovyShortVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
 
     ivyJar = fileTree("${gradle.gradleHomeDir}/lib/plugins") {
         include 'ivy*.jar'
@@ -56,7 +55,7 @@ dependencies {
     compile localGroovy()
 
     testCompile "org.spockframework:spock-core:1.2-groovy-${groovyShortVer}", {
-        exclude module : 'groovy-all'
+        exclude module: 'groovy-all'
     }
     testCompile 'org.slf4j:slf4j-api:1.7.13'
     testCompile 'org.slf4j:slf4j-simple:1.7.13'
@@ -65,13 +64,13 @@ dependencies {
 }
 
 test {
-    systemProperties DONT_LOOK_FOR_IVY_JAR : 1
+    systemProperties DONT_LOOK_FOR_IVY_JAR: 1
 }
 
 integrationTest {
-    systemProperties TESTROOT : buildDir
+    systemProperties TESTROOT: buildDir
 
-    if(gradle.startParameter.isOffline()) {
+    if (gradle.startParameter.isOffline()) {
         systemProperties OFFLINE: 1
     }
 }
@@ -81,18 +80,18 @@ license {
     strictCheck = true
     ignoreFailures = false
     mapping {
-        groovy ='DOUBLESLASH_STYLE'
+        groovy = 'DOUBLESLASH_STYLE'
     }
     ext.year = '2013-2018'
-    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md','**/*.properties','**/*CompatibilitySpec.groovy'])
+    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md', '**/*.properties', '**/*CompatibilitySpec.groovy'])
 }
 
 pluginBundle {
     description = 'A plugin that keeps a local repository for offline of isolated environments'
-    website     = 'https://github.com/ysb33r/ivypot-gradle-plugin'
-    vcsUrl      = 'https://github.com/ysb33r/ivypot-gradle-plugin.git'
+    website = 'https://github.com/ysb33r/ivypot-gradle-plugin'
+    vcsUrl = 'https://github.com/ysb33r/ivypot-gradle-plugin.git'
 
-    tags = ['repositoryManagement','repositories']
+    tags = ['repositoryManagement', 'repositories']
 
     plugins {
         ivypotPlugin {
@@ -124,8 +123,8 @@ gradleTest {
         println "  ${it.name}"
     }
 
-    if(OS.windows) {
-        gradleArguments '-g', file("${buildDir}/gradleTest/userHome").absolutePath
+    if (OS.windows) {
+        gradleArguments '-g', file("${buildDir}/gradleTest/userHome").absolutePath.replaceAll(~$/\\/$, '/')
     }
 }
 

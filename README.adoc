@@ -9,7 +9,7 @@ security processes to be applied to the binary files before committing them to a
 
 == Gradle minimum versions
 
-* As from 0.9 the minimum supported Gradle version is 5.0.
+* As from 0.9 the minimum supported Gradle version is 5.0. I have very little time to maintain this low usage plugin, so trying to make it compatible with 4.0 as well is too much effort. There is no feature change from 0.8, so if you need to use Gradle 4.x, stay with 0.8.
 * As from 0.7 the minimum supported Gradle version is 4.0. (Required if you want Google repository support).
 * As from 0.5 the minimum supported Gradle version in 2.8.
 
