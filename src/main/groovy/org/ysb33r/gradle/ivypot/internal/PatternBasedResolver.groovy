@@ -14,6 +14,7 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
+import groovy.transform.CompileStatic
 import org.gradle.api.internal.artifacts.repositories.resolver.IvyResourcePattern
 import org.gradle.api.internal.artifacts.repositories.resolver.M2ResourcePattern
 import org.gradle.api.internal.artifacts.repositories.resolver.ResourcePattern
@@ -22,6 +23,7 @@ import org.gradle.api.internal.artifacts.repositories.resolver.PatternBasedResol
 /**
  * @author Schalk W. Cronjé
  */
+@CompileStatic
 class PatternBasedResolver implements GradlePatternBasedResolver {
 
     boolean m2compatible = false

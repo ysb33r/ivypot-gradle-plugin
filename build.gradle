@@ -14,13 +14,14 @@
 
 
 // PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
+import org.gradle.util.GradleVersion
 
 plugins {
     id 'groovy'
     id 'maven'
     id 'com.gradle.plugin-publish' version '0.9.9'
     id 'com.github.hierynomus.license' version '0.12.1'
-    id 'org.ysb33r.gradletest' version '2.0-alpha-6'
+    id 'org.ysb33r.gradletest' version '2.0-beta.3'
     id 'org.ysb33r.os' version '0.9'
 }
 
@@ -28,8 +29,8 @@ apply from: 'gradle/integration-tests.gradle'
 
 version = '0.9-SNAPSHOT'
 group = 'org.ysb33r.gradle'
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 ext {
     groovyLongVer = GroovySystem.version
@@ -50,11 +51,11 @@ repositories {
 }
 
 dependencies {
-    compile 'org.ysb33r.gradle:grolifant:0.5'
+    compile 'org.ysb33r.gradle:grolifant:0.10'
     compile gradleApi()
     compile localGroovy()
 
-    testCompile "org.spockframework:spock-core:1.1-groovy-${groovyShortVer}", {
+    testCompile "org.spockframework:spock-core:1.2-groovy-${groovyShortVer}", {
         exclude module : 'groovy-all'
     }
     testCompile 'org.slf4j:slf4j-api:1.7.13'
@@ -114,12 +115,10 @@ publishPlugins {
 }
 
 gradleTest {
-    versions '4.0.2', '4.1', '4.2.1'
-    versions '4.3.1', '4.4.1', '4.5'
-    versions '4.6', '4.7'
+    versions '5.2.1'
+    versions '5.0'
 
     inputs.files jar
-    inputs.dir file('gradleTest')
 
     beforeTest {
         println "  ${it.name}"

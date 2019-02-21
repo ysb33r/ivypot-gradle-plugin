@@ -1,6 +1,17 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 
+== 1.0
+
+=== Compatibility
+
+* Gradle compatibility tested 4.0 - 5.2.1
+
+=== Breaking changes
+
+* Minimum JDK8 required
+* Major rewrite of the internal reposiotry support. Relies less on Gradle less APIs and provides a DSL layer that mimics the Gradle `repository` structure, but is not binary compatible.
+
 == 0.8
 
 * {issues}32[#32] - Honour non-transitive dependencies

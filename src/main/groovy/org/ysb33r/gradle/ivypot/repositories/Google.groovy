@@ -12,15 +12,15 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.internal
+package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileStatic
 
 /**
- * @author Schalk W. Cronjé
+ * @since 1.0
  */
 @CompileStatic
-class Google extends MavenRepository {
+class Google extends MavenArtifactRepository {
 
     @Override
     String resolverXml() {

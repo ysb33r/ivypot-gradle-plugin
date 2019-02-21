@@ -41,7 +41,6 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
     static final File LOCALREPO = new File(ROOT, 'local-offline-repo')
 
     Project project
-    Task syncTask
 
     void setupSpec() {
         OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
@@ -92,7 +91,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
 
         project.evaluate()
-        project.tasks.syncRemoteRepositories.execute()
+        project.tasks.syncRemoteRepositories.exec()
 
         expect:
         LOCALREPO.exists()
@@ -128,7 +127,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
 
         project.evaluate()
-        project.tasks.syncRemoteRepositories.execute()
+        project.tasks.syncRemoteRepositories.exec()
 
         expect:
         LOCALREPO.exists()
@@ -165,7 +164,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
 
         project.evaluate()
-        project.tasks.syncRemoteRepositories.execute()
+        project.tasks.syncRemoteRepositories.exec()
 
         expect:
         LOCALREPO.exists()
@@ -201,7 +200,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
 
         project.evaluate()
-        project.tasks.syncRemoteRepositories.execute()
+        project.tasks.syncRemoteRepositories.exec()
 
         expect:
         new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
@@ -280,7 +279,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
 
         project.evaluate()
-        project.tasks.syncRemoteRepositories.execute()
+        project.tasks.syncRemoteRepositories.exec()
 
         expect:
         LOCALREPO.exists()
@@ -316,7 +315,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
 
         project.evaluate()
-        project.tasks.syncRemoteRepositories.execute()
+        project.tasks.syncRemoteRepositories.exec()
 
         expect:
         LOCALREPO.exists()
