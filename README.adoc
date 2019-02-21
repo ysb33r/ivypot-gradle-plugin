@@ -1,5 +1,5 @@
 = IvyPot - A Gradle plugin for Off-line Repositories
-:revnumber: 0.8
+:revnumber:0.9
 
 Not all development teams have the luxury of relying on Maven Central, Bintray for day to day development. Some of them
 are still fortunate to proxy public repositories via in-house Artifactory or Nexus instances. Others have even more
@@ -9,12 +9,14 @@ security processes to be applied to the binary files before committing them to a
 
 == Gradle minimum versions
 
-* As from 0.7 the minimum supported Gradle version is 4.0. (Re  uired if you want Google repository support).
+* As from 0.9 the minimum supported Gradle version is 5.0. I have very little time to maintain this low usage plugin, so trying to make it compatible with 4.0 as well is too much effort. There is no feature change from 0.8, so if you need to use Gradle 4.x, stay with 0.8.
+* As from 0.7 the minimum supported Gradle version is 4.0. (Required if you want Google repository support).
 * As from 0.5 the minimum supported Gradle version in 2.8.
 
 
 == Previous versions
 
+* https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_8_0[Release 0.8]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_7_0[Release 0.7]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_6_0[Release 0.6]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_5_0[Release 0.5]

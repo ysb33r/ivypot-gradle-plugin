@@ -12,19 +12,16 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.internal
+package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Named
+import org.ysb33r.gradle.ivypot.IvyXml
 
 /**
- * @author Schalk W. Cronjé
+ * @since 1.0
  */
 @CompileStatic
-class JCenter extends MavenRepository {
-
-    @Override
-    String resolverXml() {
-        """<ibiblio name="${name}" root="https://jcenter.bintray.com/" m2compatible="true"/>"""
-    }
-
+interface Repository extends Named, IvyXml {
+    void setName(final String name)
 }

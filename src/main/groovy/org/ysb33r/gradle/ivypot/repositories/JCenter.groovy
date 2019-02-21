@@ -12,20 +12,19 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.internal
+package org.ysb33r.gradle.ivypot.repositories
+
+import groovy.transform.CompileStatic
 
 /**
  * @author Schalk W. Cronjé
  */
-class MavenLocal extends MavenRepository {
-
-    MavenLocal() {
-        super()
-        url =  "${new File(System.getProperty('user.home')).absoluteFile.toURI()}.m2/repository/"
-    }
+@CompileStatic
+class JCenter extends MavenArtifactRepository {
 
     @Override
     String resolverXml() {
-        """<ibiblio name="${name}" root="${url}" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
+        """<ibiblio name="${name}" root="https://jcenter.bintray.com/" m2compatible="true"/>"""
     }
+
 }
