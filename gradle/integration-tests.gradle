@@ -1,5 +1,6 @@
 // This is based upon what Rob Fletcher has done at
 // https://raw.githubusercontent.com/robfletcher/gradle-compass/master/gradle/integration-tests.gradle
+import org.gradle.util.GradleVersion
 
 configurations {
     integrationTestCompile {

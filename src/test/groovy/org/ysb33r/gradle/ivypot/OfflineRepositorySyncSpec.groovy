@@ -97,11 +97,6 @@ class OfflineRepositorySyncSpec extends Specification {
                             ivy 'foo/ivy.xml'
                         }
                     }
-
-
-//                    flatDir {
-//                        dirs
-//                    }
                 }
             }
             // end::usage[]
@@ -110,13 +105,13 @@ class OfflineRepositorySyncSpec extends Specification {
         // Need to extract repositories in order collected using these gradle-assigned names
         def mavenC =    syncTask.repositories.getByName('MavenRepo')
         def mavenL =    syncTask.repositories.getByName('MavenLocal')
-        def maven2 =    syncTask.repositories.getByName('maven')
-        def maven3 =    syncTask.repositories.getByName('maven2')
+        def maven2 =    syncTask.repositories.getByName('maven_1')
+        def maven3 =    syncTask.repositories.getByName('maven_2')
         def bintray=    syncTask.repositories.getByName('BintrayJCenter')
-        def ivyMaven=   syncTask.repositories.getByName('ivy')
-        def ivyGradle=  syncTask.repositories.getByName('ivy2')
-        def ivyIvy=     syncTask.repositories.getByName('ivy3')
-        def ivyPattern= syncTask.repositories.getByName('ivy4')
+        def ivyMaven=   syncTask.repositories.getByName('ivy_3')
+        def ivyGradle=  syncTask.repositories.getByName('ivy_4')
+        def ivyIvy=     syncTask.repositories.getByName('ivy_5')
+        def ivyPattern= syncTask.repositories.getByName('ivy_6')
         def google=     syncTask.repositories.getByName('Google')
 
         expect: 'Local repo has been set'
@@ -127,7 +122,7 @@ class OfflineRepositorySyncSpec extends Specification {
 
         and: 'a maven repo can be added'
         maven2.url == 'http://foo.com/bar'.toURI()
-        maven2.resolverXml() == "<ibiblio name='maven' m2compatible='true' root='http://foo.com/bar'/>"
+        maven2.resolverXml() == "<ibiblio name='maven_1' m2compatible='true' root='http://foo.com/bar'/>"
 
         and: 'a maven repo with artifact urls and credentials can be added'
         maven3.url == 'http://hog.com/whole'.toURI()
@@ -135,17 +130,10 @@ class OfflineRepositorySyncSpec extends Specification {
         maven3.artifactUrls.contains('http://hog.com/two'.toURI())
         maven3.credentials.username == 'the'
         maven3.credentials.password == 'pig'
-//        maven3.resolverXml() == "<ibiblio name='maven2' m2compatible='true' root='http://hog.com/whole'/>"
-        maven3.resolverXml() == '''<chain name='maven2'><ibiblio name='maven2_root' m2compatible='true' root='http://hog.com/whole' usepoms='true'/>''' +
-            "<ibiblio name='maven2_0' m2compatible='true' root='http://hog.com/one' usepoms='false'/>" +
-            "<ibiblio name='maven2_1' m2compatible='true' root='http://hog.com/two' usepoms='false'/>" +
+        maven3.resolverXml() == '''<chain name='maven_2'><ibiblio name='maven_2_root' m2compatible='true' root='http://hog.com/whole' usepoms='true'/>''' +
+            "<ibiblio name='maven_2_0' m2compatible='true' root='http://hog.com/one' usepoms='false'/>" +
+            "<ibiblio name='maven_2_1' m2compatible='true' root='http://hog.com/two' usepoms='false'/>" +
             '</chain>'
-
-//        maven3.resolverXml() == '''<url name='maven2' m2compatible='true'>''' +
-//            "<artifact pattern='http://hog.com/whole/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
-//            "<artifact pattern='http://hog.com/one/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
-//            "<artifact pattern='http://hog.com/two/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
-//            '</url>'
 
         and: 'JCenter is loaded'
         bintray.resolverXml() == '<ibiblio name="BintrayJCenter" root="https://jcenter.bintray.com/" m2compatible="true"/>'
@@ -154,19 +142,19 @@ class OfflineRepositorySyncSpec extends Specification {
         mavenL.resolverXml() == """<ibiblio name="MavenLocal" root="${new File(System.getProperty('user.home')).absoluteFile.toURI()}.m2/repository/" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
 
         and: 'ivy with maven layout loaded'
-        ivyMaven.resolverXml() == '''<url name='ivy' m2compatible='true'>''' +
+        ivyMaven.resolverXml() == '''<url name='ivy_3' m2compatible='true'>''' +
             "<ivy pattern='http://ivy/climber/[organisation]/[module]/[revision]/ivy-[revision].xml'/>" +
             "<artifact pattern='http://ivy/climber/${IvyArtifactRepository.MAVEN_ARTIFACT_PATTERN}'/>" +
             '</url>'
 
         and: 'ivy with gradle layout loaded'
-        ivyGradle.resolverXml() == '''<url name='ivy2' m2compatible='false'>''' +
+        ivyGradle.resolverXml() == '''<url name='ivy_4' m2compatible='false'>''' +
             "<ivy pattern='http://gradle/grover/[organisation]/[module]/[revision]/ivy-[revision].xml'/>" +
             "<artifact pattern='http://gradle/grover/${IvyArtifactRepository.GRADLE_ARTIFACT_PATTERN}'/>" +
             '</url>'
 
         and: 'ivy with ivy layout loaded + credentials'
-        ivyIvy.resolverXml() == '''<url name='ivy3' m2compatible='false'>''' +
+        ivyIvy.resolverXml() == '''<url name='ivy_5' m2compatible='false'>''' +
             "<ivy pattern='http://hog/roast/${IvyArtifactRepository.IVY_ARTIFACT_PATTERN}'/>" +
             "<artifact pattern='http://hog/roast/${IvyArtifactRepository.IVY_ARTIFACT_PATTERN}'/>" +
             '</url>'
@@ -174,15 +162,13 @@ class OfflineRepositorySyncSpec extends Specification {
         ivyIvy.credentials.password == 'pig'
 
         and: 'ivy with pattern layout loaded'
-        ivyPattern.resolverXml() == '''<url name='ivy4' m2compatible='false'>''' +
+        ivyPattern.resolverXml() == '''<url name='ivy_6' m2compatible='false'>''' +
             "<ivy pattern='http://pat/tern/foo/ivy.xml'/>" +
             "<artifact pattern='http://pat/tern/[artifact].[ext]'/>" +
             '</url>'
 
         and: 'google was loaded'
         google.resolverXml() == '''<ibiblio name="Google" root="https://dl.google.com/dl/android/maven2/" m2compatible="true"/>'''
-
-        //and: 'a flatDir repo can be added'
     }
 
     void "Not specifying a configuration, means all configurations are loaded"() {
@@ -253,7 +239,7 @@ class OfflineRepositorySyncSpec extends Specification {
 
     }
 
-    void "Cannot use existing project in alls to addProject"() {
+    void "Cannot use existing project as parameter to addProject"() {
         when:
         project.allprojects {
             syncTask {
