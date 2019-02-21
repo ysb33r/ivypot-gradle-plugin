@@ -26,19 +26,14 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ModuleDependency
-import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
-import org.gradle.api.internal.artifacts.dsl.DefaultRepositoryHandler
-import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.FileUtils
-import org.gradle.internal.reflect.DirectInstantiator
-import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.GradleVersion
-import org.ysb33r.gradle.ivypot.internal.BaseRepositoryFactory
+import org.ysb33r.gradle.ivypot.repositories.RepositoryHandler
 import org.ysb33r.grolifant.api.StringUtils
 
 @CompileStatic
@@ -51,15 +46,15 @@ class OfflineRepositorySync extends DefaultTask {
 
         ivyAnt.taskdef name: "${name}Configure",
             classname: 'org.apache.ivy.ant.IvyConfigure',
-            classpath : ivyJar
+            classpath: ivyJar
 
         ivyAnt.taskdef name: "${name}Resolve",
             classname: 'org.apache.ivy.ant.IvyResolve',
-            classpath : ivyJar
+            classpath: ivyJar
 
-        repositories = createRepositoryHandler(project.gradle)
+        repositories = new RepositoryHandler(project)
 
-        if(GradleVersion.current() < GradleVersion.version('4.0')) {
+        if (GradleVersion.current() < GradleVersion.version('4.0')) {
             inputs.properties.put('project configurations', { ->
                 this.projectConfigurations
             })
@@ -94,7 +89,6 @@ class OfflineRepositorySync extends DefaultTask {
     boolean includeBuildScriptDependencies = false
 
     @OutputDirectory
-    @CompileDynamic
     File getRepoRoot() {
         project.file(this.repoRoot).absoluteFile
     }
@@ -114,12 +108,12 @@ class OfflineRepositorySync extends DefaultTask {
      * return the {@code buildscript} configuration in here. The latter is made available directly to
      */
     Set<Configuration> getConfigurations() {
-        Set<Configuration> configurationSet= []
+        Set<Configuration> configurationSet = []
         projectConfigurations.collect { Project p, List<Object> configs ->
-            configurationSet.addAll(getConfigurationsFor(p,configs))
+            configurationSet.addAll(getConfigurationsFor(p, configs))
         }
 
-        configurationSet.addAll(getConfigurationsFor(project,this.configurations))
+        configurationSet.addAll(getConfigurationsFor(project, this.configurations))
         configurationSet
     }
 
@@ -158,8 +152,8 @@ class OfflineRepositorySync extends DefaultTask {
      * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
      */
     void addProject(final Project p) {
-        if(p == project) {
-            throw new CannotUseCurrentProjectException('The current project cannot be added in this way. Use configurations instead',p)
+        if (p == project) {
+            throw new CannotUseCurrentProjectException('The current project cannot be added in this way. Use configurations instead', p)
         } else {
             projectConfigurations[p] = []
         }
@@ -188,9 +182,10 @@ class OfflineRepositorySync extends DefaultTask {
      * @param configs Remainder of configurations from project
      * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
      */
+
     void addProject(final Project p, Object config1, Object... configs) {
-        if(p == project) {
-            throw new CannotUseCurrentProjectException('The current project cannot be added in this way. Use configurations instead',p)
+        if (p == project) {
+            throw new CannotUseCurrentProjectException('The current project cannot be added in this way. Use configurations instead', p)
         } else {
             final List<Object> cfg = [config1]
             cfg.addAll(configs)
@@ -208,8 +203,9 @@ class OfflineRepositorySync extends DefaultTask {
      * @param configs Remainder of configurations from project
      * @throw {@link CannotUseCurrentProjectException} if operation is attempted on the current subproject.
      */
+
     void addProject(final String s, Object config1, Object... configs) {
-        addProject(project.findProject(s),config1,configs)
+        addProject(project.findProject(s), config1, configs)
     }
 
     /** Adds remote repositories as per Gradle convention.
@@ -218,14 +214,14 @@ class OfflineRepositorySync extends DefaultTask {
      * object
      */
     void repositories(Closure repoConfigurator) {
-        Closure configurator = (Closure)(repoConfigurator.clone())
+        Closure configurator = (Closure) (repoConfigurator.clone())
         configurator.delegate = this.repositories
         configurator()
     }
 
     /** Access to the repositories that have been defined
      *
-     * @return A repository handler that Gradle users hsould be accustomed to.
+     * @return A repository handler that Gradle users should be accustomed to.
      */
     RepositoryHandler getRepositories() {
         this.repositories
@@ -243,7 +239,7 @@ class OfflineRepositorySync extends DefaultTask {
             deps.addAll(getExternalModuleDependencies(cfg))
         }
 
-        if(includeBuildScriptDependencies) {
+        if (includeBuildScriptDependencies) {
             deps.addAll(getExternalModuleDependencies(
                 project.rootProject.buildscript.configurations.getByName('classpath')
             ))
@@ -270,7 +266,7 @@ class OfflineRepositorySync extends DefaultTask {
         setAntLogLevel()
 
         dependencies.each { Dependency dep ->
-            ivyInstall(dep,overwrite)
+            ivyInstall(dep, overwrite)
         }
 
     }
@@ -284,68 +280,68 @@ class OfflineRepositorySync extends DefaultTask {
      */
     @PackageScope
     @CompileDynamic
-    void ivyInstall( Dependency dep, boolean overwrite ) {
+    void ivyInstall(Dependency dep, boolean overwrite) {
 
-        ivyAnt."${name}Resolve" (
-            inline : true,
+        ivyAnt."${name}Resolve"(
+            inline: true,
             organisation: dep.group, module: dep.name, revision: dep.version,
-            transitive: dep instanceof ModuleDependency ? ((ModuleDependency)dep).transitive : true,
-            type : '*',
-            conf : '*'
+            transitive: dep instanceof ModuleDependency ? ((ModuleDependency) dep).transitive : true,
+            type: '*',
+            conf: '*'
         )
     }
 
     @PackageScope
     @CompileDynamic
     void initIvyInstaller() {
-        ivyAnt."${name}Configure" file : createIvySettingsFile().absolutePath
+        ivyAnt."${name}Configure" file: createIvySettingsFile().absolutePath
 
     }
 
     @PackageScope
     File createIvySettingsFile() {
-        def target= new File(temporaryDir,'ivysettings.xml')
+        def target = new File(temporaryDir, 'ivysettings.xml')
         target.text = ivyXml()
         target
     }
 
 
     /** Returns the XML required for ivysettings.xml.
-    * @sa {@link https://github.com/apache/groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml}
-    */
+     * @sa {@link https://github.com/apache/groovy/blob/master/src/resources/groovy/grape/defaultGrapeConfig.xml}
+     */
     @PackageScope
     @CompileDynamic
     String ivyXml() {
-        File cacheDir = project.gradle.startParameter.projectCacheDir ?: new File(project.buildDir,'tmp')
-        String xml= "<ivysettings><settings defaultResolver='${REMOTECHAINNAME}'/>"
+        File cacheDir = project.gradle.startParameter.projectCacheDir ?: new File(project.buildDir, 'tmp')
+        String xml = "<ivysettings><settings defaultResolver='${REMOTECHAINNAME}'/>"
 
-        xml+= "<caches defaultCacheDir='${repoRoot}' artifactPattern='${repoArtifactPattern}' ivyPattern='${repoIvyPattern}' " +
+        xml += "<caches defaultCacheDir='${repoRoot}' artifactPattern='${repoArtifactPattern}' ivyPattern='${repoIvyPattern}' " +
             "resolutionCacheDir='${cacheDir}/ivypot/${FileUtils.toSafeFileName(name)}'/>"
 
         this.repositories.each {
-            if(it.metaClass.respondsTo(it,'getCredentials')) {
+            if (it.metaClass.respondsTo(it, 'getCredentials')) {
                 if (it.credentials.username && it.credentials.password) {
-                    xml+="<credentials host='${it.url.host}' username='${it.credentials.username}' passwd='${it.credentials.password}'/>"
+                    xml += "<credentials host='${it.url.host}' username='${it.credentials.username}' passwd='${it.credentials.password}'/>"
                 }
             }
         }
 
-        xml+="""<resolvers><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
+        xml += """<resolvers><chain name="${REMOTECHAINNAME}" returnFirst="true">"""
 
-        this.repositories.each { xml+= it.resolverXml() }
+        this.repositories.each { xml += it.resolverXml() }
 
-        xml+= """</chain></resolvers></ivysettings>"""
-     }
+        xml += """</chain></resolvers></ivysettings>"""
+    }
 
     @PackageScope
     void setAntLogLevel() {
-        if(ivyAnt) {
+        if (ivyAnt) {
             org.apache.tools.ant.Project localRef = ivyAnt.project
             LogLevel gradleLogLevel = project.logging.level
             ivyAnt.project.buildListeners.each { BuildListener it ->
-                if(it instanceof DefaultLogger) {
-                    DefaultLogger antLogger = ((DefaultLogger)it)
-                    switch(gradleLogLevel) {
+                if (it instanceof DefaultLogger) {
+                    DefaultLogger antLogger = ((DefaultLogger) it)
+                    switch (gradleLogLevel) {
                         case null:
                         case gradleLogLevel.LIFECYCLE:
                             antLogger.messageOutputLevel = localRef.MSG_WARN
@@ -372,7 +368,7 @@ class OfflineRepositorySync extends DefaultTask {
      */
     @CompileDynamic
     private static String findIvyJarPath(Project project) {
-        if(DONT_LOOK_FOR_IVY_JAR) {
+        if (DONT_LOOK_FOR_IVY_JAR) {
             return null
         } else {
             def files = new File(project.gradle.gradleHomeDir, 'lib/plugins').listFiles(new FilenameFilter() {
@@ -390,23 +386,9 @@ class OfflineRepositorySync extends DefaultTask {
         }
     }
 
-    @CompileDynamic
-    private static RepositoryHandler createRepositoryHandler(Gradle gradle) {
-        Instantiator instantiator
-
-        // This handles a difference in the internal API between 2.3 & 2.4
-        if (DirectInstantiator.metaClass.static.hasProperty('INSTANCE')) {
-            instantiator = DirectInstantiator.INSTANCE
-        } else {
-            instantiator = new DirectInstantiator()
-        }
-
-        new DefaultRepositoryHandler(new BaseRepositoryFactory(), instantiator)
-    }
-
     private void addConfigurationsRecursivelyFrom(final Project p) {
 
-        if( p != project ) {
+        if (p != project) {
             projectConfigurations[p] = []
         }
 
@@ -418,12 +400,12 @@ class OfflineRepositorySync extends DefaultTask {
     // Given a project and associated list of configs returns the config objects
     // if configs is null or empty all configurations will be returned.
     private Iterable<Configuration> getConfigurationsFor(final Project p, Iterable<Object> configs) {
-        if(!configs || configs.size()<1) {
+        if (!configs || configs.size() < 1) {
             p.configurations
         } else {
             configs.collect { Object config ->
-                if(config instanceof Configuration) {
-                    (Configuration)config
+                if (config instanceof Configuration) {
+                    (Configuration) config
                 } else {
                     p.configurations.getByName(StringUtils.stringize(config))
                 }
@@ -441,7 +423,7 @@ class OfflineRepositorySync extends DefaultTask {
     private final RepositoryHandler repositories
     private final AntBuilder ivyAnt
     private final List<Object> configurations = []
-    private final Map<Project,List<Object> > projectConfigurations = [:]
+    private final Map<Project, List<Object>> projectConfigurations = [:]
 
     private static final String LOCALREPONAME = '~~~local~~~repo~~~'
     private static final String REMOTECHAINNAME = '~~~remote~~~resolvers~~~'

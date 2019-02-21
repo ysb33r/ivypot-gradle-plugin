@@ -12,20 +12,17 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.internal
+package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileStatic
-import org.gradle.api.GradleException
 
 /**
- * @author Schalk W. Cronjé
+ * @since 1.0
  */
 @CompileStatic
-class MavenCentral extends MavenRepository {
-
+class MavenCentral extends MavenArtifactRepository {
     @Override
     String resolverXml() {
         """<ibiblio name="${name}" m2compatible="true"/>"""
     }
-
 }

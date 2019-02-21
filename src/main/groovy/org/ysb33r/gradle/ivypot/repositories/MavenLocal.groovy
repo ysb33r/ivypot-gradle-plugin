@@ -12,25 +12,21 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot
-
-import org.gradle.api.GradleException
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.util.GradleVersion
-
+package org.ysb33r.gradle.ivypot.repositories
 /**
- * @author Schalk W. Cronjé
+ * @since 1.0
  */
-class OfflineRepositoryPlugin implements Plugin<Project> {
+class MavenLocal extends MavenArtifactRepository {
 
-    final static String MINIMUM_GRADLE = '4.0'
+    MavenLocal() {
+        super()
+        url = "${new File(System.getProperty('user.home')).absoluteFile.toURI()}.m2/repository/"
+    }
 
-    void apply(Project project) {
-
-        if (GradleVersion.current() < GradleVersion.version(MINIMUM_GRADLE)) {
-            throw new GradleException("Ivypot can only be used with Gradle ${MINIMUM_GRADLE} or later")
-        }
-        project.tasks.create 'syncRemoteRepositories', OfflineRepositorySync
+    @Override
+    String resolverXml() {
+        """<ibiblio name="${name}" root="${
+            url
+        }" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
     }
 }

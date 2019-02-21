@@ -12,7 +12,7 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.internal
+package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -20,6 +20,7 @@ import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.repositories.AuthenticationContainer
 import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.ysb33r.gradle.ivypot.internal.Credentials
 import org.ysb33r.grolifant.api.UriUtils
 
 /**

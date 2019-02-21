@@ -12,22 +12,20 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.internal
+package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
-import org.gradle.api.ActionConfiguration
-import org.gradle.api.artifacts.ComponentMetadataSupplier
-import org.gradle.api.artifacts.repositories.IvyArtifactRepository
-import org.gradle.api.artifacts.repositories.IvyArtifactRepositoryMetaDataProvider
 import org.gradle.api.artifacts.repositories.RepositoryLayout
-import org.ysb33r.gradle.ivypot.IvyXml
+import org.ysb33r.gradle.ivypot.internal.PatternBasedResolver
+import org.ysb33r.grolifant.api.ClosureUtils
 
 /**
+ * @since 1.0
  */
 @CompileStatic
-class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
+class IvyArtifactRepository implements Repository, RepositoryTraits {
 
     String artifactPattern
     String ivyPattern
@@ -44,9 +42,8 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      *
      * @param pattern The artifact pattern.
      */
-    @Override
     void artifactPattern(String pattern) {
-        this.artifactPattern+= pattern
+        this.artifactPattern = pattern
     }
 
     /**
@@ -59,7 +56,6 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      *
      * @param pattern The ivy pattern.
      */
-    @Override
     void ivyPattern(String pattern) {
         this.ivyPattern = pattern
     }
@@ -70,7 +66,6 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      *
      * @param layoutName The name of the layout to use.
      */
-    @Override
     void layout(final String layoutName) {
         final String namespace = 'org.gradle.api.internal.artifacts.repositories.layout.'
         String repositoryLayoutName
@@ -87,10 +82,10 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
         }
 
         try {
-            layoutClass =  Class.forName "${namespace}${repositoryLayoutName}RepositoryLayout"
-        } catch(ClassNotFoundException e) {
+            layoutClass = Class.forName "${namespace}${repositoryLayoutName}RepositoryLayout"
+        } catch (ClassNotFoundException e) {
             // Change in class name prefix in Gradle 2.3 from 'Pattern' to 'DefaultIvyPattern'.
-            if(layoutName == 'pattern') {
+            if (layoutName == 'pattern') {
                 layoutClass = Class.forName "${namespace}DefaultIvy${repositoryLayoutName}RepositoryLayout"
             } else {
                 throw e
@@ -147,12 +142,9 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      * @param layoutName The name of the layout to use.
      * @param config The closure used to configure the layout.
      */
-    @Override
     void layout(String layoutName, Closure config) {
         layout(layoutName)
-        Closure cfg = (Closure)(config.clone())
-        cfg.delegate = repositoryLayout
-        cfg()
+        ClosureUtils.configureItem(repositoryLayout, config)
     }
 
     /** Specifies how the items of the repository are organized.
@@ -160,30 +152,10 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
      * @param layoutName The name of the layout to use.
      * @param action The action used to configure the layout. Takes a {@code RepositoryLayout} as parameter.
      *
-     * @since 0.5
      */
     void layout(String layoutName, Action<? extends RepositoryLayout> action) {
         layout(layoutName)
         action.execute(repositoryLayout)
-    }
-
-    /**
-     * Returns the meta-data provider used when resolving artifacts from this repository. The provider is responsible for locating and interpreting the meta-data
-     * for the modules and artifacts contained in this repository. Using this provider, you can fine tune how this resolution happens.
-     *
-     * @return Null. This is not supported at present.
-     */
-    @Override
-    IvyArtifactRepositoryMetaDataProvider getResolve() {
-        return null
-    }
-
-    @Override
-    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass) {
-    }
-
-    @Override
-    void setMetadataSupplier(Class<? extends ComponentMetadataSupplier> aClass, Action<? super ActionConfiguration> action) {
     }
 
     /** Returns a XML snippet suitable for including in the resolvers section
@@ -217,7 +189,7 @@ class IvyRepository implements IvyArtifactRepository, IvyXml, RepositoryTraits {
 
     @CompileDynamic
     private void setLayoutClass(Class layoutClass) {
-        repositoryLayout =  layoutClass.newInstance()
+        repositoryLayout = layoutClass.newInstance()
     }
 
     private RepositoryLayout repositoryLayout
