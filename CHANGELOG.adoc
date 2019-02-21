@@ -3,7 +3,7 @@
 
 == 0.8
 
-* {issues}32[#32] - Honour non-transitive dependencies
+* {issue}32[#32] - Honour non-transitive dependencies
 
 == 0.7
 
