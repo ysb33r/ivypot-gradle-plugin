@@ -16,12 +16,18 @@
 // PLEASE NOTE: Integration Tests and Gradle Compatibility tests download a number of files.
 
 plugins {
+    id 'com.gradle.build-scan' version '2.2.1'
     id 'groovy'
     id 'maven'
     id 'com.gradle.plugin-publish' version '0.9.9'
     id 'com.github.hierynomus.license' version '0.12.1'
     id 'org.ysb33r.gradletest' version '2.0-beta.3'
     id 'org.ysb33r.os' version '0.9'
+}
+
+buildScan {
+    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }
 
 apply from: 'gradle/integration-tests.gradle'
