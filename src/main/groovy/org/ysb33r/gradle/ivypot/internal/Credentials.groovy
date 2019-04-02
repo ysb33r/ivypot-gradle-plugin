@@ -25,7 +25,9 @@ import org.gradle.api.artifacts.repositories.PasswordCredentials
 class Credentials implements PasswordCredentials {
     String username
     String password
+    String realm
 
     void username(final String s) {this.username=s}
     void password(final String s) {this.password=s}
+    void realm(final String s) {this.realm=s}
 }

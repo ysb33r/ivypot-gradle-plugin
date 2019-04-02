@@ -321,7 +321,11 @@ class OfflineRepositorySync extends DefaultTask {
         this.repositories.each {
             if (it.metaClass.respondsTo(it, 'getCredentials')) {
                 if (it.credentials.username && it.credentials.password) {
-                    xml += "<credentials host='${it.url.host}' username='${it.credentials.username}' passwd='${it.credentials.password}'/>"
+                    xml += "<credentials host='${it.url.host}' username='${it.credentials.username}' passwd='${it.credentials.password}' "
+                    if (it.credentials.realm) {
+                        xml += "realm='${it.credentials.realm}' "
+                    }
+                    xml += "/>"
                 }
             }
         }
