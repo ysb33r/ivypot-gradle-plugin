@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -13,6 +13,9 @@
 //
 
 package org.ysb33r.gradle.ivypot.repositories
+
+import groovy.xml.MarkupBuilder
+
 /**
  * @since 1.0
  */
@@ -24,9 +27,14 @@ class MavenLocal extends MavenArtifactRepository {
     }
 
     @Override
-    String resolverXml() {
-        """<ibiblio name="${name}" root="${
-            url
-        }" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
+    void writeTo(MarkupBuilder builder) {
+        builder.ibiblio(
+                name:name,
+                root: url,
+                m2compatible: true,
+                checkmodified: true,
+                changingPattern:'.*',
+                changingMatcher: 'regexp'
+        )
     }
 }

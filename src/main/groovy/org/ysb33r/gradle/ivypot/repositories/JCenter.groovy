@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -14,7 +14,9 @@
 
 package org.ysb33r.gradle.ivypot.repositories
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.xml.MarkupBuilder
 
 /**
  * @author Schalk W. Cronjé
@@ -23,8 +25,8 @@ import groovy.transform.CompileStatic
 class JCenter extends MavenArtifactRepository {
 
     @Override
-    String resolverXml() {
-        """<ibiblio name="${name}" root="https://jcenter.bintray.com/" m2compatible="true"/>"""
+    @CompileDynamic
+    void writeTo(MarkupBuilder builder) {
+        builder.ibiblio(name: name, root: 'https://jcenter.bintray.com/', m2compatible: true)
     }
-
 }
