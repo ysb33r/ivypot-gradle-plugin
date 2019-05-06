@@ -13,6 +13,9 @@
 //
 
 package org.ysb33r.gradle.ivypot.repositories
+
+import groovy.xml.MarkupBuilder
+
 /**
  * @since 1.0
  */
@@ -24,9 +27,14 @@ class MavenLocal extends MavenArtifactRepository {
     }
 
     @Override
-    String resolverXml() {
-        """<ibiblio name="${name}" root="${
-            url
-        }" m2compatible="true" checkmodified="true" changingPattern=".*" changingMatcher="regexp"/>"""
+    void writeTo(MarkupBuilder builder) {
+        builder.ibiblio(
+                name:name,
+                root: url,
+                m2compatible: true,
+                checkmodified: true,
+                changingPattern:'.*',
+                changingMatcher: 'regexp'
+        )
     }
 }

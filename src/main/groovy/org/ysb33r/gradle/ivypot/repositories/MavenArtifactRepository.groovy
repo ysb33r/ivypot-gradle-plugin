@@ -16,6 +16,7 @@ package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.xml.MarkupBuilder
 import org.ysb33r.grolifant.api.StringUtils
 
 /**
@@ -30,7 +31,7 @@ class MavenArtifactRepository implements Repository, RepositoryTraits {
      * @return The additional URLs. Returns an empty list if there are no such URLs.
      */
     Set<URI> getArtifactUrls() {
-        StringUtils.stringize(this.artifactUrls).collect{ String it -> it.toURI() } as Set<URI>
+        StringUtils.stringize(this.artifactUrls).collect { String it -> it.toURI() } as Set<URI>
     }
 
     /**
@@ -72,24 +73,19 @@ class MavenArtifactRepository implements Repository, RepositoryTraits {
         artifactUrls.addAll(urls)
     }
 
-    /** Returns a XML snippet suitable for including in the resolvers section
-     *
-     * @return
-     */
     @Override
-    String resolverXml() {
-        if(artifactUrls.size()) {
-            String ret = "<chain name='${name}'><ibiblio name='${name}_root' m2compatible='true' root='${url}' usepoms='true'/>"
-            getArtifactUrls().eachWithIndex { URI u,int index ->
-                ret+= "<ibiblio name='${name}_${index}' m2compatible='true' root='${u}' usepoms='false'/>"
+    @CompileDynamic
+    void writeTo(MarkupBuilder builder) {
+        if (artifactUrls.size()) {
+            builder.chain(name: name) {
+                ibiblio(name: "${name}_root}", m2compatible: true, root: url, usepoms: true)
+                getArtifactUrls().eachWithIndex { URI u, int index ->
+                    ibiblio(name: "${name}_${index}", m2compatible: true, root: u, usepoms: false)
+                }
             }
-
-            ret + '</chain>'
-
         } else {
-            "<ibiblio name='${name}' m2compatible='true' root='${url}'/>"
+            builder.ibiblio(name: name, m2compatible: true, root: url)
         }
-
     }
 
     private List<Object> artifactUrls = []
