@@ -1,7 +1,7 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 
-== 1.0
+== 0.9
 
 === Compatibility
 
