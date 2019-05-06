@@ -12,21 +12,23 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.repositories
+package org.ysb33r.gradle.ivypot
 
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
-import groovy.xml.MarkupBuilder
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Specification
 
-/**
- * @since 1.0
- */
-@CompileStatic
-class Google extends MavenArtifactRepository {
 
-    @Override
-    @CompileDynamic
-    void writeTo(MarkupBuilder builder) {
-        builder.ibiblio(name: name, root: 'https://dl.google.com/dl/android/maven2/', m2compatible: true)
+class OfflineRepositoryExtensionSpec extends Specification {
+
+    Project project = ProjectBuilder.builder().build()
+
+    void 'Version values are read from property file'() {
+        given:
+        OfflineRepositoryExtension ext = project.extensions.create('foo', OfflineRepositoryExtension, project)
+
+        expect:
+        ext.ivyVersion != '2.3.0'
+        ext.groovyVersion != ext.ivyVersion
     }
 }

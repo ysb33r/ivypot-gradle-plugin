@@ -1,0 +1,21 @@
+task generateIvyAntVersions {
+    ext {
+        outFile = file("${buildDir}/ivyAnt/org.ysb33r.gradle.ivypot.versions.properties")
+        ivyVersion = { project.ext.ivyVersion }
+        groovyVersion = { project.ext.groovyLongVer }
+    }
+
+    inputs.properties.put('versions', "${ivyVersion()}${groovyVersion()}" )
+    outputs.file(outFile)
+    
+    doLast {
+        def props = new Properties()
+        props.putAll([
+                'ivy.version': ivyVersion.call(),
+                'groovy.version': groovyVersion.call()
+        ])
+        outFile.withOutputStream { strm ->
+            props.store(strm,'')
+        }
+    }
+}

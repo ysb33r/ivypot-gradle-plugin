@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -12,15 +12,16 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot
+package org.ysb33r.gradle.ivypot.remote
 
-/**
- * @author Schalk W. Cronjé
- */
-interface IvyXml {
-    /** Returns a XML snippet suitable for including in the resolvers section
-     *
-     * @return
-     */
-    String resolverXml()
+import groovy.transform.CompileStatic
+
+@CompileStatic
+class IvyDependency implements Serializable {
+    String organisation
+    String module
+    String revision
+    boolean transitive
+    String typeFilter
+    String confFilter
 }

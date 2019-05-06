@@ -1,6 +1,20 @@
 // This is based upon what Rob Fletcher has done at
 // https://raw.githubusercontent.com/robfletcher/gradle-compass/master/gradle/integration-tests.gradle
-import org.gradle.util.GradleVersion
+
+
+sourceSets {
+    integrationTest {
+//        java.srcDir file('src/integTest/java')
+//        groovy.srcDir file('src/integTest/groovy')
+//        resources.srcDir file('src/integTest/resources')
+//        compileClasspath = sourceSets.main.output + configurations.integrationTestCompile
+//        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
+    }
+
+    remoteTest {
+        compileClasspath = sourceSets.main.output +configurations.remoteTestCompile
+    }
+}
 
 configurations {
     integrationTestCompile {
@@ -11,26 +25,18 @@ configurations {
     }
 }
 
-sourceSets {
-    integrationTest {
-        java.srcDir file('src/integTest/java')
-        groovy.srcDir file('src/integTest/groovy')
-        resources.srcDir file('src/integTest/resources')
-        compileClasspath = sourceSets.main.output +  configurations.integrationTestCompile
-        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
-    }
-}
-
-task integrationTest(type: Test, dependsOn: jar) {
-    if(GradleVersion.current() < GradleVersion.version('4.0')) {
-        testClassesDir = sourceSets.integrationTest.output.classesDir
-    } else {
-        testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    }
-    classpath = sourceSets.integrationTest.runtimeClasspath
+task remoteTest(type: Test, dependsOn: jar) {
+    testClassesDirs = sourceSets.remoteTest.output.classesDirs
+    classpath = sourceSets.remoteTest.runtimeClasspath
     mustRunAfter test
 }
 
-check.dependsOn integrationTest
+task integrationTest(type: Test, dependsOn: jar) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    mustRunAfter test, remoteTest
+}
+
+check.dependsOn integrationTest, remoteTest
 
 
