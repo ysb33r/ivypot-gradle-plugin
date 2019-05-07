@@ -250,6 +250,28 @@ class OfflineRepositorySyncSpec extends Specification {
         thrown(CannotUseCurrentProjectException)
     }
 
+    void 'Adding a binary repository'() {
+        when:
+        project.allprojects {
+            syncTask {
+                binaryRepositories {
+                    gradleDist {
+                        rootUri = 'https://services.gradle.org/distributions/'
+                        artifactPattern = 'gradle-[revision]-[type].[ext]'
+                    }
+                }
+            }
+        }
+
+        def binaryRepo = syncTask.binaryRepositories.getByName('gradleDist')
+
+        then:
+        verifyAll {
+            binaryRepo.rootUri == 'https://services.gradle.org/distributions/'.toURI()
+            binaryRepo.artifactPattern == 'gradle-[revision]-[type].[ext]'
+        }
+    }
+
     private getConfiguration(final Iterable<Configuration> configs, final String name) {
         configs.find {
             it.name == name

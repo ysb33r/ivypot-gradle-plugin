@@ -23,7 +23,11 @@ class ExecutionData implements Serializable {
     int logLevel
     File ivySettings
     File ivyRepoRoot
+    File binaryRepoRoot
+
     List<IvyDependency> dependencies = []
+    Map<String,BinaryRepositoryDescriptor> binaryRepositories = [:]
+    List<BinaryDependency> binaries = []
 
     static void serializeData(File destination, ExecutionData data) {
         destination.parentFile.mkdirs()

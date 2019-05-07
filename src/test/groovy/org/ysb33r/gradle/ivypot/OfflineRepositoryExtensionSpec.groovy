@@ -16,6 +16,7 @@ package org.ysb33r.gradle.ivypot
 
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.ysb33r.gradle.ivypot.extensions.OfflineRepositoryExtension
 import spock.lang.Specification
 
 

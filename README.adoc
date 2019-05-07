@@ -16,6 +16,7 @@ security processes to be applied to the binary files before committing them to a
 
 == Previous versions
 
+* https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_9_0[Release 0.9]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_8_0[Release 0.8]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_7_0[Release 0.7]
 * https://github.com/ysb33r/ivypot-gradle-plugin/tree/RELEASE_0_6_0[Release 0.6]
@@ -191,6 +192,57 @@ Now you just have to run `./gradlew syncRemoteRepositories` or `./gradlew :sync:
 
 NOTE: Also see `src/gradleTest/multiProject` as an example of how this works. (That's actually the compability test we use for multi-projects).
 
+== Caching arbitrary binaries
+
+As from 0.10 it is now possible to cache arbitrary binarie files with a path that typically matches that on the server. This is especially useful for people that need to perform tests where binaries are downloaded many times.
+
+=== Configuring binary repositories
+
+[source,groovy]
+----
+syncRemoteRepositories {
+    binaryRepositories {
+        nodejs { // <1>
+            rootUri = 'https://nodejs.org/dist/' // <2>
+            artifactPattern = 'v[revision]/[module]-v[revision]-[classifier].[ext]' // <3>
+        }
+    }
+}
+----
+<1> The name of the repository. This will also be treated as the group/organisation names.
+<2> The root URI of the remote repository. Only `file` and `http(s)` schemes are supported.
+<3> A pattern similar to that if Ivy for resolving the artifact path below the root URI.
+  This is also used to calculate a relative path for storing the binary locally.
+  Note that `classifier` is supported.
+
+=== Specifying binaries locally
+
+If you have one project then the easiest is to specify the binaries within the
+`syncRemoteRepositories` task using the `cachedBinaries.add` DSL keyword.
+
+[source,groovy]
+----
+syncRemoteRepositories {
+    cacheBinaries.add 'nodejs:node:7.10.0:linux-64@tar.xz'
+}
+----
+
+=== Specifying binaries in other projects
+
+It might be useful to rather specify binaries to be cached within the subproject where they are required and then let the syncRemoteRepositories task discover them. In order to achieve this apply a plugin which adds an extension to the `dependencies` block.
+
+[source,groovy,subs="+attributes"]
+----
+plugins {
+  id 'org.ysb33r.binarypot.base' version '{revnumber}' // <1>
+}
+
+dependencies {
+    cachedBinaries.add 'nodejs:node:7.10.0:linux-64@tar.xz' //<2>
+}
+----
+<1> Adds the `cachedBinaries` extenion to `dependencies` block.
+<2> The same syntax is used, but the organisation/group name must match that of a binary repository as defined in `syncRemoteRepositories.
 
 == Adding buildscript dependencies
 
@@ -219,8 +271,9 @@ which relies on finding a compiler jar in a certain named way failed when used w
 == Flat directories
 
 The `flatDir` repository supported by Gradle is not supported as it does not make sense. The purpose of this plugin is
-to cache remote repositories into a useable local repository. If a user already has a `flatDir` it does not need be be
+to cache remote repositories into a usable local repository. If a user already has a `flatDir` it does not need be be
 cached and if need be it can simply be copied.
+
 
 == Limitations
 

@@ -12,7 +12,7 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot
+package org.ysb33r.gradle.ivypot.extensions
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
