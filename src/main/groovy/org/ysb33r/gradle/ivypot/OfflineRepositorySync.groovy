@@ -16,24 +16,34 @@ package org.ysb33r.gradle.ivypot
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.xml.MarkupBuilder
+import groovy.transform.Internal
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.JavaExecSpec
+import org.ysb33r.gradle.ivypot.extensions.DependencyHandlerExtension
+import org.ysb33r.gradle.ivypot.extensions.OfflineRepositoryExtension
 import org.ysb33r.gradle.ivypot.internal.AntLogLevel
+import org.ysb33r.gradle.ivypot.internal.DefaultBinaryRepository
 import org.ysb33r.gradle.ivypot.internal.IvyUtils
+import org.ysb33r.gradle.ivypot.remote.BinaryDependency
+import org.ysb33r.gradle.ivypot.remote.BinaryRepositoryDescriptor
+import org.ysb33r.gradle.ivypot.remote.Downloader
 import org.ysb33r.gradle.ivypot.remote.ExecutionData
-import org.ysb33r.gradle.ivypot.remote.IvyAnt
 import org.ysb33r.gradle.ivypot.remote.IvyDependency
 import org.ysb33r.gradle.ivypot.repositories.RepositoryHandler
+import org.ysb33r.gradle.ivypot.repositories.binary.BinaryArtifactDependency
+import org.ysb33r.gradle.ivypot.repositories.binary.BinaryRepository
 import org.ysb33r.grolifant.api.FileUtils
 import org.ysb33r.grolifant.api.StringUtils
 
@@ -48,7 +58,7 @@ class OfflineRepositorySync extends DefaultTask {
 
         repositories = new RepositoryHandler(project)
 
-        inputs.property('project configurations', { OfflineRepositorySync ors ->
+        inputs.properties.put('project configurations', { OfflineRepositorySync ors ->
             Set<Configuration> configs = ors.getConfigurations()
             configs.collect { Configuration c ->
                 c.dependencies.collect { Dependency d ->
@@ -56,6 +66,20 @@ class OfflineRepositorySync extends DefaultTask {
                 }.join(',')
             }.join('|')
         }.curry(this))
+
+        inputs.properties.put('cached binaries' , { OfflineRepositorySync ors ->
+            ors.binaries*.toString().join('')
+        }.curry(this))
+
+        binaryRepositories = project.container(BinaryRepository) { String repoName ->
+            DefaultBinaryRepository.create(repoName, null, null)
+        }
+
+        binaryRepositories.addRule('create new binary repository') { t ->
+            binaryRepositories.create(t)
+        }
+
+        extBinaries = extensions.create('cachedBinaries', DependencyHandlerExtension, project)
     }
 
     /** The pattern that will be used to write artifacts into the target repository
@@ -79,6 +103,25 @@ class OfflineRepositorySync extends DefaultTask {
     @OutputDirectory
     File getRepoRoot() {
         project.file(this.repoRoot).absoluteFile
+    }
+
+    @OutputDirectory
+    File getBinaryRepoRoot() {
+        project.file(this.binaryRepoRoot).absoluteFile
+    }
+
+    NamedDomainObjectContainer<BinaryRepository> getBinaryRepositories() {
+        this.binaryRepositories
+    }
+
+    void binaryRepositories(@DelegatesTo(NamedDomainObjectContainer) Closure cfg) {
+        cfg.delegate = this.binaryRepositories
+        cfg.resolveStrategy = Closure.DELEGATE_ONLY
+        cfg()
+    }
+
+    void binaryRepositories(Action<NamedDomainObjectContainer<BinaryRepository>> action) {
+        action.execute(this.binaryRepositories)
     }
 
     void repoRoot(Object repo) {
@@ -243,6 +286,22 @@ class OfflineRepositorySync extends DefaultTask {
         repoRoot ? "${repoRoot}/${repoArtifactPattern}" : null
     }
 
+    @Internal
+    List<BinaryArtifactDependency> getBinaries() {
+        List<DependencyHandlerExtension> handlers = [extBinaries]
+        handlers.addAll(
+            projectConfigurations.keySet().collect { Project p ->
+                (DependencyHandlerExtension) (
+                        (ExtensionAware) p.dependencies).extensions.findByName(BinaryPotBasePlugin.EXTENSION_NAME
+                )
+            }.findAll { it != null }
+        )
+
+        handlers.collectMany { DependencyHandlerExtension dhext ->
+            dhext.asMap.values()
+        } as List<BinaryArtifactDependency>
+    }
+
     @TaskAction
     void exec() {
         File executionDataFile = new File(project.buildDir, "tmp/${toSafeFileName(name)}/execution.data")
@@ -255,22 +314,44 @@ class OfflineRepositorySync extends DefaultTask {
         ExecutionData executionData = new ExecutionData()
         executionData.with {
             overwrite = project.gradle.startParameter.isRefreshDependencies()
-            ivySettings = ivySettingsFile.canonicalFile
-            ivyRepoRoot = getRepoRoot().canonicalFile
+            ivySettings = ivySettingsFile
+            ivyRepoRoot = getRepoRoot()
             logLevel = AntLogLevel.fromGradleLogLevel(logging.level)
             dependencies.addAll(ivyDeps)
         }
 
+        executionData.binaryRepoRoot = getBinaryRepoRoot()
+        executionData.binaryRepositories.putAll(this.binaryRepositories.collectEntries { repo ->
+            [repo.name, new BinaryRepositoryDescriptor(rootUri: repo.rootUri, artifactPattern: repo.artifactPattern)]
+        })
+
+        executionData.binaries.addAll(binaries.collect {
+            binaryDependency(it)
+        })
+
         ExecutionData.serializeData(executionDataFile, executionData)
         Configuration ivyRuntime = offlineRepositorySync.configuration
-        File ivyAnt = resolveClassLocation(IvyAnt).file
+        File entryPointClasspath = resolveClassLocation(Downloader).file
         project.javaexec { JavaExecSpec jes ->
             jes.with {
-                main = IvyAnt.canonicalName
-                classpath ivyRuntime, ivyAnt
+                main = Downloader.canonicalName
+                classpath ivyRuntime, entryPointClasspath
                 args executionDataFile.absolutePath
             }
         }
+    }
+
+    private BinaryDependency binaryDependency(BinaryArtifactDependency dep) {
+        new BinaryDependency(
+                organisation: dep.group,
+                module: dep.module,
+                revision: dep.revision,
+                transitive: false,
+                typeFilter: dep.type,
+                confFilter: '*',
+                classifier: dep.classifier,
+                extension: dep.extension
+        )
     }
 
     private IvyDependency ivyDependency(Dependency dep) {
@@ -291,14 +372,13 @@ class OfflineRepositorySync extends DefaultTask {
     private File createIvySettingsFile() {
         File target = new File(temporaryDir, 'ivysettings.xml')
         IvyUtils.writeSettingsFile(
-            target,
+                target,
                 repositories,
                 getRepoRoot(),
                 new File(project.buildDir, "tmp/ivypot/${FileUtils.toSafeFileName(name)}"),
                 repoIvyPattern,
                 repoArtifactPattern,
                 repositoryCredentials
-
         )
         target
     }
@@ -348,8 +428,12 @@ class OfflineRepositorySync extends DefaultTask {
         }
     }
 
+    final NamedDomainObjectContainer<BinaryRepository> binaryRepositories
+
     private Object repoRoot
+    private Object binaryRepoRoot = { new File(getRepoRoot(), 'binaries') }
     private final RepositoryHandler repositories
+    private final DependencyHandlerExtension extBinaries
     private final List<Object> configurations = []
     private final Map<Project, List<Object>> projectConfigurations = [:]
 }

@@ -257,12 +257,11 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         build()
 
         then:
-        file_exists'rubygems/colorize/0.7.7/ivys/ivy.xml'
-        file_exists'rubygems/colorize/0.7.7/gems/colorize.gem'
+        file_exists 'rubygems/colorize/0.7.7/ivys/ivy.xml'
+        file_exists 'rubygems/colorize/0.7.7/gems/colorize.gem'
     }
 
     void 'Can we sync from Google?'() {
-
         setup:
         writeBuildFile """
             configurations {
@@ -286,8 +285,30 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         build()
 
         then:
-        file_exists 'commons-io/commons-io/2.4/ivy-2.4.xml'
-        file_exists 'commons-io/commons-io/2.4/commons-io-2.4.jar'
+        file_exists 'com.android.support.constraint/constraint-layout/1.0.2/constraint-layout-1.0.2.aar'
+        file_exists 'com.android.support.constraint/constraint-layout-solver/1.0.2/constraint-layout-solver-1.0.2.jar'
+    }
+
+    void 'Sync a remote binary that is defined in the task'() {
+        setup:
+        writeBuildFile """
+        syncRemoteRepositories {
+            binaryRepositories {
+                nodejs {
+                    rootUri = 'https://nodejs.org/dist/'
+                    artifactPattern = 'v[revision]/[module]-v[revision]-[classifier].[ext]'
+                }
+            }
+            
+            cachedBinaries.add 'nodejs:node:7.10.0:linux-x64@tar.xz'
+        }
+        """
+
+        when:
+        build()
+
+        then:
+        file_exists 'binaries/nodejs/v7.10.0/node-v7.10.0-linux-x64.tar.xz'
     }
 
     private boolean file_exists(String path) {

@@ -6,6 +6,10 @@ configurations {
     github
 }
 
+repositories {
+    jcenter()
+}
+
 dependencies {
     // Copying this plugin as it has a nice svnkit dependency set
     simple 'at.bxm.gradleplugins:gradle-svntools-plugin:1.1'
@@ -22,6 +26,15 @@ syncRemoteRepositories {
         }
     }
 
+    binaryRepositories {
+        nodejs {
+            rootUri = 'https://nodejs.org/dist/'
+            artifactPattern = 'v[revision]/[module]-v[revision]-[classifier].[ext]'
+        }
+    }
+
+    cachedBinaries.add 'nodejs:node:7.10.0:linux-x64@tar.xz'
+    
     configurations 'simple'
 }
 

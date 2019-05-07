@@ -19,6 +19,7 @@ import groovy.transform.CompileStatic
 import org.apache.tools.ant.BuildListener
 import org.apache.tools.ant.DefaultLogger
 import org.apache.tools.ant.Project
+import org.gradle.internal.impldep.org.apache.ivy.core.IvyPatternHelper
 
 @CompileStatic
 class IvyAnt {
@@ -26,21 +27,6 @@ class IvyAnt {
     public static final String CONFIGURE_CLASS = 'org.apache.ivy.ant.IvyConfigure'
     public static final String RESOLVE_TASK = 'ivyResolve'
     public static final String RESOLVE_CLASS = 'org.apache.ivy.ant.IvyResolve'
-
-    static void main(String[] args) {
-        if (args.size() != 1) {
-            throw new RuntimeException('No serialised location specified')
-        }
-
-        ExecutionData executionData = ExecutionData.deserializeData(new File(args[0]))
-        def ivyAnt = new IvyAnt(executionData.ivySettings)
-        ivyAnt.logLevel = executionData.logLevel
-        ivyAnt.resolve(
-                executionData.ivyRepoRoot,
-                executionData.dependencies,
-                executionData.overwrite
-        )
-    }
 
     IvyAnt(File ivySettings) {
         this.ivySettings = ivySettings
@@ -71,13 +57,6 @@ class IvyAnt {
         ivyAnt."${CONFIGURE_TASK}" file: ivySettings.absolutePath
     }
 
-    /**
-     *
-     * @param dep
-     * @param overwrite
-     *
-     * @sa {@link https://ant.apache.org/ivy/history/trunk/use/resolve.html}
-     */
     @CompileDynamic
     private void ivyInstall(IvyDependency dep, boolean overwrite) {
         ivyAnt."${RESOLVE_TASK}"(
@@ -91,14 +70,12 @@ class IvyAnt {
 
     @CompileDynamic
     private void configureAnt() {
+        ivyAnt.taskdef(name: CONFIGURE_TASK, classname: CONFIGURE_CLASS)
+        ivyAnt.taskdef(name: RESOLVE_TASK, classname: RESOLVE_CLASS)
+    }
 
-        ivyAnt.taskdef name: CONFIGURE_TASK,
-                classname: CONFIGURE_CLASS
-//            classpath: ivyJar
-
-        ivyAnt.taskdef name: RESOLVE_TASK,
-                classname: RESOLVE_CLASS
-//            classpath: ivyJar
+    void test() {
+        //IvyPatternHelper.substitute()
     }
 
     private final AntBuilder ivyAnt

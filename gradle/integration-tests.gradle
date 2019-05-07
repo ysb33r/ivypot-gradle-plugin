@@ -4,15 +4,11 @@
 
 sourceSets {
     integrationTest {
-//        java.srcDir file('src/integTest/java')
-//        groovy.srcDir file('src/integTest/groovy')
-//        resources.srcDir file('src/integTest/resources')
-//        compileClasspath = sourceSets.main.output + configurations.integrationTestCompile
-//        runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
     }
 
     remoteTest {
-        compileClasspath = sourceSets.main.output +configurations.remoteTestCompile
+        compileClasspath = sourceSets.main.output + configurations.remoteTestCompile
+        runtimeClasspath = output + compileClasspath + configurations.remoteTestRuntime
     }
 }
 

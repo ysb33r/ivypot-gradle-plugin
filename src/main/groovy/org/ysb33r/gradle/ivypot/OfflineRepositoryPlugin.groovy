@@ -18,6 +18,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.util.GradleVersion
+import org.ysb33r.gradle.ivypot.extensions.OfflineRepositoryExtension
 
 /**
  * @author Schalk W. Cronjé
