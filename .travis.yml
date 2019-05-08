@@ -6,7 +6,7 @@ sudo: true
 install: true
 
 script:
- - ./gradlew  -S clean build --console=plain --info
+ - ./gradlew  -S clean build --console=plain --info --scan
 
 jdk:
  - oraclejdk8
