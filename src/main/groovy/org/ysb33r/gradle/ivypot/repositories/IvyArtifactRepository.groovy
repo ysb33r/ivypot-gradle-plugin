@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -16,6 +16,7 @@ package org.ysb33r.gradle.ivypot.repositories
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.xml.MarkupBuilder
 import org.gradle.api.Action
 import org.gradle.api.artifacts.repositories.RepositoryLayout
 import org.ysb33r.gradle.ivypot.internal.PatternBasedResolver
@@ -158,13 +159,9 @@ class IvyArtifactRepository implements Repository, RepositoryTraits {
         action.execute(repositoryLayout)
     }
 
-    /** Returns a XML snippet suitable for including in the resolvers section
-     *
-     * @return
-     */
     @Override
-    String resolverXml() {
-
+    @CompileDynamic
+    void writeTo(MarkupBuilder builder) {
         if (repositoryLayout == null) {
             throw new UnsupportedOperationException('layout has not seen set for Ivy repository')
         }
@@ -172,14 +169,14 @@ class IvyArtifactRepository implements Repository, RepositoryTraits {
         PatternBasedResolver patterns = new PatternBasedResolver()
         applyPatterns(patterns)
 
-        String ret = "<url name='${name}' m2compatible='${patterns.m2compatible ? 'true' : 'false'}'>"
-        patterns.ivyPatterns.each {
-            ret += "<ivy pattern='${it.pattern}'/>"
+        builder.url(name: name, m2compatible: patterns.m2compatible) {
+            patterns.ivyPatterns.each { pat ->
+                ivy(pattern: pat.pattern)
+            }
+            patterns.artifactPatterns.each { pat ->
+                artifact(pattern: pat.pattern)
+            }
         }
-        patterns.artifactPatterns.each {
-            ret += "<artifact pattern='${it.pattern}'/>"
-        }
-        ret += '</url>'
     }
 
     @CompileDynamic

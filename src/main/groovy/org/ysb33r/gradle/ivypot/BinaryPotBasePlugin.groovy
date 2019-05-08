@@ -12,21 +12,20 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.repositories
+package org.ysb33r.gradle.ivypot
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.xml.MarkupBuilder
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
+import org.ysb33r.gradle.ivypot.extensions.DependencyHandlerExtension
 
-/**
- * @since 1.0
- */
 @CompileStatic
-class Google extends MavenArtifactRepository {
+class BinaryPotBasePlugin implements Plugin<Project> {
 
+    public final static String EXTENSION_NAME = 'cachedBinaries'
     @Override
-    @CompileDynamic
-    void writeTo(MarkupBuilder builder) {
-        builder.ibiblio(name: name, root: 'https://dl.google.com/dl/android/maven2/', m2compatible: true)
+    void apply(Project project) {
+        ((ExtensionAware)project.dependencies).extensions.create(EXTENSION_NAME, DependencyHandlerExtension, project)
     }
 }

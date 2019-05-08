@@ -19,9 +19,10 @@ plugins {
     id 'com.gradle.build-scan' version '2.2.1'
     id 'groovy'
     id 'maven'
+    id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.9.9'
     id 'com.github.hierynomus.license' version '0.12.1'
-    id 'org.ysb33r.gradletest' version '2.0-beta.3'
+    id 'org.ysb33r.gradletest' version '2.0-rc.4'
     id 'org.ysb33r.os' version '0.9'
 }
 
@@ -32,52 +33,63 @@ buildScan {
 
 apply from: 'gradle/integration-tests.gradle'
 
-version = '0.9'
+version = '0.10'
 group = 'org.ysb33r.gradle'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 ext {
+    ivyVersion = '2.4.0'
     groovyLongVer = GroovySystem.version
     groovyShortVer = GroovySystem.version.replaceAll(/\.\d+$/, '')
-
-    ivyJar = fileTree("${gradle.gradleHomeDir}/lib/plugins") {
-        include 'ivy*.jar'
-    }
 }
 
-task foo {
-    doLast {
-        println ivyJar.files
-    }
-}
+apply from: 'gradle/ivyAntVersions.gradle'
+
 repositories {
     jcenter()
 }
 
+configurations {
+    spock
+    ivy
+
+    testCompile.extendsFrom spock
+    integrationTestCompile.extendsFrom spock
+    remoteTestCompile.extendsFrom spock
+}
+
 dependencies {
-    compile 'org.ysb33r.gradle:grolifant:0.10'
+    spock "org.spockframework:spock-core:1.2-groovy-${groovyShortVer}", {
+        exclude module: 'groovy-all'
+        exclude group: 'org.codehaus.groovy'
+    }
+
+    compileOnly "org.apache.ivy:ivy:${ivyVersion}"
+    compile 'org.ysb33r.gradle:grolifant:0.12.1'
     compile gradleApi()
     compile localGroovy()
 
-    testCompile "org.spockframework:spock-core:1.2-groovy-${groovyShortVer}", {
-        exclude module: 'groovy-all'
-    }
     testCompile 'org.slf4j:slf4j-api:1.7.13'
     testCompile 'org.slf4j:slf4j-simple:1.7.13'
 
-    testRuntime ivyJar
+    integrationTestCompile gradleTestKit()
+
+    remoteTestCompile localGroovy()
+    remoteTestRuntime "org.codehaus.groovy:groovy-ant:${groovyLongVer}"
+    remoteTestRuntime "org.apache.ivy:ivy:${ivyVersion}"
 }
 
-test {
-    systemProperties DONT_LOOK_FOR_IVY_JAR: 1
-}
-
-integrationTest {
-    systemProperties TESTROOT: buildDir
-
+tasks.withType(Test) {
     if (gradle.startParameter.isOffline()) {
         systemProperties OFFLINE: 1
+    }
+}
+
+
+processResources {
+    from generateIvyAntVersions, {
+        into 'META-INF'
     }
 }
 
@@ -88,8 +100,16 @@ license {
     mapping {
         groovy = 'DOUBLESLASH_STYLE'
     }
-    ext.year = '2013-2018'
-    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md', '**/*.properties', '**/*CompatibilitySpec.groovy'])
+    ext.year = '2013-2019'
+    excludes([
+            '**/*.ad',
+            '**/*.asciidoc',
+            '**/*.adoc',
+            '**/*.md',
+            '**/*.properties',
+            '**/*.dsl.groovySpec.groovy',
+            '**/*.dsl.kotlinSpec.groovy',
+    ])
 }
 
 pluginBundle {
@@ -104,13 +124,16 @@ pluginBundle {
             id = 'org.ysb33r.ivypot'
             displayName = 'Plugin for maintaining an offline respository'
         }
+        binaryPotBasePlugin {
+            id = 'org.ysb33r.ivypot.binary.base'
+            displayName = 'Plugin that allows specification of arbitrary binaries to be cached by the ivypot plugin'
+        }
     }
 
     mavenCoordinates {
         groupId = project.group
         artifactId = 'ivypot'
     }
-
 }
 
 publishPlugins {
@@ -120,7 +143,7 @@ publishPlugins {
 }
 
 gradleTest {
-    versions '5.2.1'
+    versions '5.4.1'
     versions '5.0'
 
     inputs.files jar
@@ -132,10 +155,16 @@ gradleTest {
     if (OS.windows) {
         gradleArguments '-g', file("${buildDir}/gradleTest/userHome").absolutePath.replaceAll(~$/\\/$, '/')
     }
+
+    mustRunAfter test, integrationTest, remoteTest
 }
 
 task release {
     group 'release'
     description 'Life-cycle task for releasing the plugin'
     dependsOn build, publishPlugins
+}
+
+pluginManager.withPlugin('idea') {
+    tasks.ideaModule.dependsOn processResources
 }

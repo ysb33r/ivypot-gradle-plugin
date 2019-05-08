@@ -1,16 +1,38 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
+:contributor: link:https://github.com/
+
+== 0.10
+
+=== Improvements
+
+* {issue}29[#29] Added realm parameter for credentials (Thank you Jakob Hendeß).
+* {issue}34[#34] Resolve classifiers and extensions correctly.
+* {issue}40[#40] Run repository synchronisation process in separate JVM.
+* {issue}41[#41] Allow arbitrary binaries to be cached.
+
+=== Breaking changes
+
+* Not binary compatible with 0.9.
+
+=== Contributors
+
+* {contributor}jhendess[Jakob Hendeß]
 
 == 0.9
 
 === Compatibility
 
-* Gradle compatibility tested 4.0 - 5.2.1
+* Gradle compatibility tested 5.0 - 5.2.1
 
 === Breaking changes
 
 * Minimum JDK8 required
-* Major rewrite of the internal reposiotry support. Relies less on Gradle less APIs and provides a DSL layer that mimics the Gradle `repository` structure, but is not binary compatible.
+* Major rewrite of the internal repository support. Relies less on Gradle less APIs and provides a DSL layer that mimics the Gradle `repository` structure, but is not binary compatible.
+
+=== Compatibility
+
+* Gradle compatibility tested 4.0 - 5.2.1
 
 == 0.8
 
