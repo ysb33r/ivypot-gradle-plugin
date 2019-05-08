@@ -17,7 +17,6 @@ class BinaryDownloaderSpec extends Specification {
                 organisation: 'foo',
                 module: 'bar',
                 revision: '1.2.3',
-                transitive: false,
                 extension: 'tar',
                 classifier: 'bin'
         )
@@ -33,7 +32,6 @@ class BinaryDownloaderSpec extends Specification {
                 organisation: 'foo',
                 module: 'bar',
                 revision: '1.2.3',
-                transitive: false,
                 extension: 'tar'
         )
         def pat = '[module]:[revision]:([classifier]:)[ext]'

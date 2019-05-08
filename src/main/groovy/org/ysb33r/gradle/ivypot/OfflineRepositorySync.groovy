@@ -346,23 +346,35 @@ class OfflineRepositorySync extends DefaultTask {
                 organisation: dep.group,
                 module: dep.module,
                 revision: dep.revision,
-                transitive: false,
                 typeFilter: dep.type,
-                confFilter: '*',
                 classifier: dep.classifier,
                 extension: dep.extension
         )
     }
 
     private IvyDependency ivyDependency(Dependency dep) {
-        new IvyDependency(
-                organisation: dep.group,
-                module: dep.name,
-                revision: dep.version,
-                transitive: dep instanceof ModuleDependency ? ((ModuleDependency) dep).transitive : true,
-                typeFilter: '*',
-                confFilter: '*'
-        )
+        if(dep instanceof ModuleDependency) {
+            ModuleDependency modDep = (ModuleDependency)dep
+            new IvyDependency(
+                    organisation: dep.group,
+                    module: dep.name,
+                    revision: dep.version,
+                    transitive: modDep.transitive,
+                    typeFilter: modDep.artifacts?.getAt(0)?.type ?: '*',
+                    confFilter: '*',
+                    classifier: modDep.artifacts?.getAt(0)?.classifier,
+                    extension: modDep.artifacts?.getAt(0)?.extension
+            )
+        } else {
+            new IvyDependency(
+                    organisation: dep.group,
+                    module: dep.name,
+                    revision: dep.version,
+                    transitive: true,
+                    typeFilter: '*',
+                    confFilter: '*'
+            )
+        }
     }
 
     private OfflineRepositoryExtension getOfflineRepositorySync() {

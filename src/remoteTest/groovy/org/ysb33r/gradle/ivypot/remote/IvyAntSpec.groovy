@@ -54,7 +54,7 @@ class IvyAntSpec extends Specification {
     void 'Can resolve an artifact'() {
 
         when:
-        def dep = new IvyDependency(
+        def dep1 = new IvyDependency(
                 organisation: 'commons-io',
                 module: 'commons-io',
                 revision: '2.4',
@@ -63,13 +63,40 @@ class IvyAntSpec extends Specification {
                 confFilter: '*'
         )
 
-        new IvyAnt(ivySettings).resolve(repoDir, [dep], true)
+        def dep2 = new IvyDependency(
+                organisation: 'org.apache.karaf',
+                module: 'apache-karaf',
+                revision: '4.2.2',
+                extension: 'zip',
+                transitive: true,
+                typeFilter: '*',
+                confFilter: '*'
+        )
+
+        def dep3 = new IvyDependency(
+                organisation: 'org.ysb33r.gradle',
+                module: 'grolifant',
+                revision: '0.12.1',
+                classifier: 'sources',
+                transitive: false,
+                extension: 'jar',
+                typeFilter: '*',
+                confFilter: '*'
+        )
+
+        new IvyAnt(ivySettings).resolve(repoDir, [dep3, dep2, dep1], true)
 
         then:
         verifyAll {
-            new File(repoDir, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
-            new File(repoDir, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
+            file_exists 'commons-io/commons-io/2.4/ivy-2.4.xml'
+            file_exists 'commons-io/commons-io/2.4/commons-io-2.4.jar'
+            file_exists 'org.apache.karaf/apache-karaf/4.2.2/apache-karaf-4.2.2.zip'
+            file_exists 'org.ysb33r.gradle/grolifant/0.12.1/grolifant-0.12.1-sources.jar'
         }
+    }
+
+    private boolean file_exists(String path) {
+        new File(repoDir, path).exists()
     }
 
     private void writeIvySettings() {
@@ -85,6 +112,7 @@ class IvyAntSpec extends Specification {
                 resolvers {
                     chain(name: 'foobar', returnFirst: true) {
                         ibiblio(name: 'MavenRepo', m2compatible: true)
+                        ibiblio(name: 'BintrayJCenter', m2compatible: true, root: 'https://jcenter.bintray.com/')
                     }
                 }
             }

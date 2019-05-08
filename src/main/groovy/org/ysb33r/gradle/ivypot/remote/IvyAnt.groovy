@@ -16,10 +16,10 @@ package org.ysb33r.gradle.ivypot.remote
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.xml.MarkupBuilder
 import org.apache.tools.ant.BuildListener
 import org.apache.tools.ant.DefaultLogger
 import org.apache.tools.ant.Project
-import org.gradle.internal.impldep.org.apache.ivy.core.IvyPatternHelper
 
 @CompileStatic
 class IvyAnt {
@@ -48,7 +48,7 @@ class IvyAnt {
     void resolve(File repoRoot, List<IvyDependency> deps, boolean overwrite) {
         repoRoot.mkdirs()
         deps.each {
-            ivyInstall(it, overwrite)
+            ivyInstall(it, overwrite, repoRoot)
         }
     }
 
@@ -58,14 +58,46 @@ class IvyAnt {
     }
 
     @CompileDynamic
-    private void ivyInstall(IvyDependency dep, boolean overwrite) {
-        ivyAnt."${RESOLVE_TASK}"(
-                inline: true,
-                organisation: dep.organisation, module: dep.module, revision: dep.revision,
-                transitive: dep.transitive,
-                type: dep.typeFilter,
-                conf: dep.confFilter
-        )
+    private void ivyInstall(IvyDependency dep, boolean overwrite, File repoRoot) {
+
+        if (dep.extension || dep.classifier) {
+            File ivyFile = new File(repoRoot,"ivy-${dep.module}.xml")
+            Map artifactAttributes = [name: dep.module, type: dep.typeFilter]
+            if (dep.extension) {
+                artifactAttributes.'ext' = dep.extension
+            }
+            if (dep.classifier) {
+                artifactAttributes.'e:classifier' = dep.classifier
+            }
+            def writer = new StringWriter()
+            new MarkupBuilder(writer).'ivy-module'(version: '2.0', 'xmlns:e': 'http://ant.apache.org/ivy/extra') {
+                info( organisation:'ignore', module:'ignore')
+                dependencies {
+                    dependency(
+                            org: dep.organisation,
+                            name: dep.module,
+                            rev: dep.revision,
+                            transitive: dep.transitive,
+                            conf: dep.confFilter
+                    ) {
+                        artifact(artifactAttributes)
+                    }
+                }
+            }
+            ivyFile.text = writer.toString()
+            ivyFile.deleteOnExit()
+            ivyAnt."${RESOLVE_TASK}"(
+                    file: ivyFile.absolutePath
+            )
+        } else {
+            ivyAnt."${RESOLVE_TASK}"(
+                    inline: true,
+                    organisation: dep.organisation, module: dep.module, revision: dep.revision,
+                    transitive: dep.transitive,
+                    type: dep.typeFilter,
+                    conf: dep.confFilter
+            )
+        }
     }
 
     @CompileDynamic
