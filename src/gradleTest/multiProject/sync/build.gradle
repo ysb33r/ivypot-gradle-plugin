@@ -8,6 +8,13 @@ syncRemoteRepositories {
     jcenter()
   }
 
+  binaryRepositories {
+    nodejs {
+      rootUri = 'https://nodejs.org/dist/'
+      artifactPattern = 'v[revision]/[module]-v[revision]-[classifier].[ext]'
+    }
+  }
+
   addAllProjects()
 }
 

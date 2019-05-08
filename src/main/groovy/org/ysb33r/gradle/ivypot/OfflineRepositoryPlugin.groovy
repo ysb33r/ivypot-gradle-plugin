@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -18,19 +18,20 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.util.GradleVersion
+import org.ysb33r.gradle.ivypot.extensions.OfflineRepositoryExtension
 
 /**
  * @author Schalk W. Cronjé
  */
 class OfflineRepositoryPlugin implements Plugin<Project> {
 
-    final static String MINIMUM_GRADLE = '4.0'
+    final static String MINIMUM_GRADLE = '5.0'
 
     void apply(Project project) {
-
         if (GradleVersion.current() < GradleVersion.version(MINIMUM_GRADLE)) {
             throw new GradleException("Ivypot can only be used with Gradle ${MINIMUM_GRADLE} or later")
         }
-        project.tasks.create 'syncRemoteRepositories', OfflineRepositorySync
+        project.extensions.create('offlineRepositories', OfflineRepositoryExtension, project)
+        project.tasks.create('syncRemoteRepositories', OfflineRepositorySync)
     }
 }

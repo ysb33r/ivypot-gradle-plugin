@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -12,15 +12,17 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot
+package org.ysb33r.gradle.ivypot.repositories.binary
 
-/**
- * @author Schalk W. Cronjé
- */
-interface IvyXml {
-    /** Returns a XML snippet suitable for including in the resolvers section
-     *
-     * @return
-     */
-    String resolverXml()
+import groovy.transform.CompileStatic
+import org.gradle.api.Named
+
+@CompileStatic
+interface BinaryRepository extends Named {
+    URI getRootUri()
+    void setRootUri(String uri)
+    void setRootUri(URI uri)
+
+    String getArtifactPattern()
+    void setArtifactPattern(String pattern)
 }

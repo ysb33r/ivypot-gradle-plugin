@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// (C) Copyright Schalk W. Cronje 2013-2018
+// (C) Copyright Schalk W. Cronje 2013-2019
 //
 // This software is licensed under the Apache License 2.0
 // See http://www.apache.org/licenses/LICENSE-2.0 for license details
@@ -14,64 +14,50 @@
 
 package org.ysb33r.gradle.ivypot
 
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.artifacts.ConfigurationContainer
-import org.gradle.api.artifacts.Dependency
-import org.gradle.testfixtures.ProjectBuilder
-import spock.lang.Ignore
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.IgnoreIf
-import spock.lang.IgnoreRest
 import spock.lang.Issue
+import spock.lang.PendingFeature
 import spock.lang.Specification
-import spock.lang.Stepwise
-
 
 /** These fixtures needs to run in the order specified as these tests are expensive in terms of downloads
  * The repository is only created once during the run to save on download time.
  *
  * @author Schalk W. Cronjé
  */
-@Stepwise
+@IgnoreIf({ System.getProperty('IS_OFFLINE') })
 class OfflineRepositorySyncIntegrationSpec extends Specification {
 
-    static final boolean OFFLINE = System.getProperty('IS_OFFLINE')
-    static final File ROOT = new File("${System.getProperty('TESTROOT') ?: new File('./build').absolutePath}/integrationTest/orsis")
-    static final File TESTROOT = new File(ROOT,'tests')
-    static final File LOCALREPO = new File(ROOT, 'local-offline-repo')
+    public static final String DEFAULT_TASK = 'syncRemoteRepositories'
+    public static final String REPO_PATH = 'repo'
 
-    Project project
+    @Rule
+    TemporaryFolder testFolder
 
-    void setupSpec() {
-        OfflineRepositorySync.DONT_LOOK_FOR_IVY_JAR = true
-
-        if (LOCALREPO.exists()) {
-            LOCALREPO.deleteDir()
-        }
-
-        LOCALREPO.mkdirs()
-
-    }
+    File projectDir
+    File buildFile
+    File settingsFile
+    File repoDir
+    String buildScript
 
     void setup() {
-        if (TESTROOT.exists()) {
-            TESTROOT.deleteDir()
-        }
+        projectDir = testFolder.root
+        buildFile = new File(projectDir, 'build.gradle')
+        settingsFile = new File(projectDir, 'settings.gradle')
+        repoDir = new File(projectDir, REPO_PATH)
+        settingsFile.text = 'rootProject.name="testproject"'
 
-        TESTROOT.mkdirs()
-        project = ProjectBuilder.builder().withProjectDir(TESTROOT).build()
-        project.apply plugin: 'org.ysb33r.ivypot'
     }
 
-    @IgnoreIf({ OFFLINE })
-    def "Can we sync from mavenCentral?"() {
+    void 'Can we sync from mavenCentral?'() {
 
-        given:
-        def pathToLocalRepo = LOCALREPO
-
-        project.allprojects {
-
-            configurations {
+        setup:
+        writeBuildFile """
+        configurations {
                 compile
             }
 
@@ -84,29 +70,28 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                 repositories {
                     mavenCentral()
                 }
-
-                repoRoot "${pathToLocalRepo}"
             }
             // end::example_jcenter[]
+        """
+
+        when:
+        BuildResult result = build()
+
+        then:
+        verifyAll {
+            result.task(":${DEFAULT_TASK}").outcome == TaskOutcome.SUCCESS
+            repoDir.exists()
         }
-
-        project.evaluate()
-        project.tasks.syncRemoteRepositories.exec()
-
-        expect:
-        LOCALREPO.exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
+        verifyAll {
+            file_exists 'commons-io/commons-io/2.4/ivy-2.4.xml'
+            file_exists 'commons-io/commons-io/2.4/commons-io-2.4.jar'
+        }
     }
 
-    @IgnoreIf({ OFFLINE })
-    def "Honour non-transitive dependencies"() {
+    void 'Honour non-transitive dependencies'() {
 
-        given:
-        def pathToLocalRepo = LOCALREPO
-
-        project.allprojects {
-
+        setup:
+        writeBuildFile """
             configurations {
                 compile
             }
@@ -121,29 +106,27 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                 repositories {
                     mavenCentral()
                 }
+            }        
+         """
 
-                repoRoot "${pathToLocalRepo}"
-            }
+        when:
+        BuildResult result = build()
+
+        then:
+        verifyAll {
+            result.task(":${DEFAULT_TASK}").outcome == TaskOutcome.SUCCESS
         }
-
-        project.evaluate()
-        project.tasks.syncRemoteRepositories.exec()
-
-        expect:
-        LOCALREPO.exists()
-        new File(LOCALREPO, 'junit/junit/4.12/ivy-4.12.xml').exists()
-        new File(LOCALREPO, 'junit/junit/4.12/junit-4.12.jar').exists()
-        !new File(LOCALREPO, 'org.hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar').exists()
+        verifyAll {
+            file_exists 'junit/junit/4.12/ivy-4.12.xml'
+            file_exists 'junit/junit/4.12/junit-4.12.jar'
+            not_file_exists 'org.hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar'
+        }
     }
 
-    @IgnoreIf({ OFFLINE })
-    def "Can we sync from mavenCentral using a different local artifactPattern?"() {
+    void 'Can we sync from mavenCentral using a different local artifactPattern?'() {
 
-        given:
-        def pathToLocalRepo = LOCALREPO
-
-        project.allprojects {
-
+        setup:
+        writeBuildFile """
             configurations {
                 compile
             }
@@ -157,29 +140,27 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                     mavenCentral()
                 }
 
-                repoRoot "${pathToLocalRepo}"
-
                 repoArtifactPattern = '[organisation]/[module]/[revision]/[type]s/[artifact]-[revision](.[ext])'
             }
+        """
+
+        when:
+        BuildResult result = build()
+
+        then:
+        verifyAll {
+            result.task(":${DEFAULT_TASK}").outcome == TaskOutcome.SUCCESS
         }
-
-        project.evaluate()
-        project.tasks.syncRemoteRepositories.exec()
-
-        expect:
-        LOCALREPO.exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/jars/commons-io-2.4.jar').exists()
+        verifyAll {
+            file_exists 'commons-io/commons-io/2.4/ivy-2.4.xml'
+            file_exists 'commons-io/commons-io/2.4/jars/commons-io-2.4.jar'
+        }
     }
 
-    @IgnoreIf({ OFFLINE })
-    def "Two syncs to same folder should not cause an overwrite exceptions"() {
+    void "Two syncs to same folder should not cause an overwrite exceptions"() {
 
-        given:
-        def pathToLocalRepo = LOCALREPO
-
-        project.allprojects {
-
+        setup:
+        writeBuildFile """
             configurations {
                 compile
             }
@@ -193,73 +174,69 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                     jcenter()
                     mavenCentral()
                 }
-
-                repoRoot "${pathToLocalRepo}"
             }
 
+        """
+
+        when:
+        BuildResult result1 = build()
+        BuildResult result2 = build()
+
+        then:
+        verifyAll {
+            result1.task(":${DEFAULT_TASK}").outcome == TaskOutcome.SUCCESS
+            result2.task(":${DEFAULT_TASK}").outcome == TaskOutcome.UP_TO_DATE
+            repoDir.exists()
         }
-
-        project.evaluate()
-        project.tasks.syncRemoteRepositories.exec()
-
-        expect:
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
+        verifyAll {
+            file_exists 'commons-io/commons-io/2.4/ivy-2.4.xml'
+            file_exists 'commons-io/commons-io/2.4/commons-io-2.4.jar'
+        }
     }
 
-
-    @IgnoreIf({ OFFLINE })
-    def "Seting includeBuildScriptDependencies means that buildscript configuration will be added"() {
+    void "Setting includeBuildScriptDependencies means that buildscript configuration will be added"() {
 
         given:
-        def pathToLocalRepo = new File(ROOT,'second-repo')
-
-        project.allprojects {
-
-            buildscript {
-                repositories {
-                    ivy {
-                        url LOCALREPO.toURI()
-                        layout 'gradle'
-                    }
-                }
-                dependencies {
-                    classpath 'commons-io:commons-io:2.4'
-                }
+        withBuildScript '''
+            repositories {
+                mavenCentral()
             }
+            dependencies {
+                classpath 'commons-io:commons-io:2.4'
+            }
+        '''
 
-
+        writeBuildFile """
             syncRemoteRepositories {
                 repositories {
-                    ivy {
-                        url LOCALREPO.toURI()
-                    }
+                    mavenCentral()
                 }
-
-                repoRoot "${pathToLocalRepo}"
 
                 includeBuildScriptDependencies = true
             }
+        """
+
+        when:
+        BuildResult result = build()
+
+        then:
+        verifyAll {
+            result.task(":${DEFAULT_TASK}").outcome == TaskOutcome.SUCCESS
+            repoDir.exists()
         }
-
-        project.evaluate()
-
-        Set<Dependency> deps = project.syncRemoteRepositories.dependencies
-
-        expect:
-        deps.find { Dependency it -> it.group == 'commons-io' && it.name == 'commons-io' && it.version == '2.4' }
+        verifyAll {
+            file_exists 'commons-io/commons-io/2.4/ivy-2.4.xml'
+            file_exists 'commons-io/commons-io/2.4/commons-io-2.4.jar'
+        }
     }
 
     @Issue('https://github.com/ysb33r/ivypot-gradle-plugin/issues/12')
-    @IgnoreIf({ true || OFFLINE })
-    def "Can we sync from a rubygems proxy?"() {
+    @PendingFeature
+    void "Can we sync from a rubygems proxy?"() {
 
-        given:
-        def pathToLocalRepo = LOCALREPO
-
-        project.allprojects {
-
-            configurations {
+        setup:
+        writeBuildFile """
+        configurations {
                 compile
             }
 
@@ -272,34 +249,26 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                 repositories {
                     maven { url 'http://rubygems.lasagna.io/proxy/maven/releases' }
                 }
-
-                repoRoot "${pathToLocalRepo}"
             }
             // end::example_rubygems[]
-        }
+        """
 
-        project.evaluate()
-        project.tasks.syncRemoteRepositories.exec()
+        when:
+        build()
 
-        expect:
-        LOCALREPO.exists()
-        new File(LOCALREPO, 'rubygems/colorize/0.7.7/ivys/ivy.xml').exists()
-        new File(LOCALREPO, 'rubygems/colorize/0.7.7/gems/colorize.gem').exists()
+        then:
+        file_exists 'rubygems/colorize/0.7.7/ivys/ivy.xml'
+        file_exists 'rubygems/colorize/0.7.7/gems/colorize.gem'
     }
 
-    @IgnoreIf({ OFFLINE })
-    def "Can we sync from Google?"() {
-
-        given:
-        def pathToLocalRepo = LOCALREPO
-
-        project.allprojects {
-
+    void 'Can we sync from Google?'() {
+        setup:
+        writeBuildFile """
             configurations {
                 compile
             }
 
-            // tag::example_jcenter[]
+            // tag::example_google[]
             dependencies {
                 compile 'com.android.support.constraint:constraint-layout:1.0.2'
             }
@@ -308,19 +277,110 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
                 repositories {
                     google()
                 }
-
-                repoRoot "${pathToLocalRepo}"
             }
-            // end::example_jcenter[]
-        }
+            // end::example_google[]
+        """
 
-        project.evaluate()
-        project.tasks.syncRemoteRepositories.exec()
+        when:
+        build()
 
-        expect:
-        LOCALREPO.exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/ivy-2.4.xml').exists()
-        new File(LOCALREPO, 'commons-io/commons-io/2.4/commons-io-2.4.jar').exists()
+        then:
+        file_exists 'com.android.support.constraint/constraint-layout/1.0.2/constraint-layout-1.0.2.aar'
+        file_exists 'com.android.support.constraint/constraint-layout-solver/1.0.2/constraint-layout-solver-1.0.2.jar'
     }
 
+    @Issue('https://github.com/ysb33r/ivypot-gradle-plugin/issues/41')
+    void 'Sync a remote binary that is defined in the task'() {
+        setup:
+        writeBuildFile """
+        syncRemoteRepositories {
+            binaryRepositories {
+                nodejs {
+                    rootUri = 'https://nodejs.org/dist/'
+                    artifactPattern = 'v[revision]/[module]-v[revision]-[classifier].[ext]'
+                }
+            }
+            
+            cachedBinaries.add 'nodejs:node:7.10.0:linux-x64@tar.xz'
+        }
+        """
+
+        when:
+        build()
+
+        then:
+        file_exists 'binaries/nodejs/v7.10.0/node-v7.10.0-linux-x64.tar.xz'
+    }
+
+    @Issue('https://github.com/ysb33r/ivypot-gradle-plugin/issues/34')
+    void 'Use a different extension'() {
+        setup:
+        writeBuildFile """
+            configurations {
+                karaf
+            }
+
+            // tag::example_with_explicit_extension[]
+            dependencies {
+                karaf 'org.apache.karaf:apache-karaf:4.2.2@zip'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    mavenCentral()
+                }
+            }
+            // end::example_with_explicit_extension[]
+        """
+
+        when:
+        build()
+
+        then:
+        file_exists 'org.apache.karaf/apache-karaf/4.2.2/apache-karaf-4.2.2.zip'
+    }
+
+    private boolean file_exists(String path) {
+        new File(repoDir, path).exists()
+    }
+
+    private boolean not_file_exists(String path) {
+        !file_exists(path)
+    }
+
+    private BuildResult build() {
+        GradleRunner.create().withDebug(true)
+                .withPluginClasspath()
+                .withProjectDir(projectDir)
+                .withArguments(['-i', '-s', DEFAULT_TASK])
+                .forwardOutput()
+                .build()
+    }
+
+    void withBuildScript(String content) {
+        buildScript = """
+        buildscript {
+            ${content}
+        }
+        """
+    }
+
+    private void writeBuildFile(String content) {
+        buildFile.text = """
+        ${buildScript ?: ''}
+
+        plugins {
+            id 'org.ysb33r.ivypot'
+        }
+
+        repositories {
+            mavenCentral()
+            jcenter()
+        }
+
+        syncRemoteRepositories.repoRoot '${REPO_PATH}'
+
+        ${content}
+        """
+    }
 }

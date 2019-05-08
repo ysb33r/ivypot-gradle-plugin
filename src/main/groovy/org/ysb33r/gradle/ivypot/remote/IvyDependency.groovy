@@ -12,21 +12,12 @@
 // ============================================================================
 //
 
-package org.ysb33r.gradle.ivypot.repositories
+package org.ysb33r.gradle.ivypot.remote
 
-import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.xml.MarkupBuilder
 
-/**
- * @since 1.0
- */
 @CompileStatic
-class Google extends MavenArtifactRepository {
-
-    @Override
-    @CompileDynamic
-    void writeTo(MarkupBuilder builder) {
-        builder.ibiblio(name: name, root: 'https://dl.google.com/dl/android/maven2/', m2compatible: true)
-    }
+class IvyDependency extends BinaryDependency implements Serializable {
+    boolean transitive
+    String confFilter
 }

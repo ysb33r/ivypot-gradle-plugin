@@ -14,20 +14,26 @@
 
 package org.ysb33r.gradle.ivypot.internal
 
-import groovy.transform.CompileStatic
-import groovy.transform.TupleConstructor
-import org.gradle.api.artifacts.repositories.PasswordCredentials
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import spock.lang.Specification
 
-/**
- */
-@TupleConstructor
-@CompileStatic
-class Credentials implements PasswordCredentials {
-    String username
-    String password
-    String realm
+class BinaryDependencySpec extends Specification {
 
-    void username(final String s) {this.username=s}
-    void password(final String s) {this.password=s}
-    void realm(final String s) {this.realm=s}
+    Project project = ProjectBuilder.builder().build()
+
+    void 'Create a binary dependency directly'() {
+        when:
+        DefaultBinaryArtifactDependency dep = DefaultBinaryArtifactDependency.create(project, "gradleDist:gradle:4.5.1:bin@zip")
+
+        then:
+        verifyAll {
+            dep.group == 'gradleDist'
+            dep.module == 'gradle'
+            dep.revision == '4.5.1'
+            dep.classifier == 'bin'
+            dep.type == 'zip'
+            dep.extension == 'zip'
+        }
+    }
 }
