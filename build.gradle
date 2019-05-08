@@ -33,7 +33,7 @@ buildScan {
 
 apply from: 'gradle/integration-tests.gradle'
 
-version = '0.10-SNAPSHOT'
+version = '0.10'
 group = 'org.ysb33r.gradle'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
