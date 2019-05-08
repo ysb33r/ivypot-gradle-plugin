@@ -194,7 +194,7 @@ NOTE: Also see `src/gradleTest/multiProject` as an example of how this works. (T
 
 == Caching arbitrary binaries
 
-As from 0.10 it is now possible to cache arbitrary binarie files with a path that typically matches that on the server. This is especially useful for people that need to perform tests where binaries are downloaded many times.
+As from 0.10 it is now possible to cache arbitrary binary files with a path that typically matches that on the server. This is especially useful for people that need to perform tests where binaries are downloaded many times.
 
 === Configuring binary repositories
 

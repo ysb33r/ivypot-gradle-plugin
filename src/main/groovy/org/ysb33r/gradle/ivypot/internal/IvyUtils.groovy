@@ -48,7 +48,6 @@ class IvyUtils {
             repositoryCredentials.each { repo ->
                 credentials(repo)
             }
-
             resolvers {
                 chain(name: REMOTECHAINNAME, returnFirst: true) {
                     repositories.each { repo ->

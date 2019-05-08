@@ -337,7 +337,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         build()
 
         then:
-        file_exists 'com.android.support.constraint/constraint-layout/1.0.2/constraint-layout-1.0.2.aar'
+        file_exists 'org.apache.karaf/apache-karaf/4.2.2/apache-karaf-4.2.2.zip'
     }
 
     private boolean file_exists(String path) {

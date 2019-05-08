@@ -1,10 +1,12 @@
 = CHANGELOG
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
+:contributor: link:https://github.com/
 
 == 0.10 - Roadmap
 
 === Improvements
 
+* {issue}29[#29] Added realm parameter for credentials (Thank you Jakob Hendeß).
 * {issue}34[#34] Resolve classifiers and extensions correctly.
 * {issue}40[#40] Run repository synchronisation process in separate JVM.
 * {issue}41[#41] Allow arbitrary binaries to be cached.
@@ -12,6 +14,10 @@
 === Breaking changes
 
 * Not binary compatible with 0.9.
+
+=== Contributors
+
+* {contributor}jhendess[Jakob Hendeß]
 
 == 0.9
 

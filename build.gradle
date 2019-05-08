@@ -101,7 +101,15 @@ license {
         groovy = 'DOUBLESLASH_STYLE'
     }
     ext.year = '2013-2019'
-    excludes(['**/*.ad', '**/*.asciidoc', '**/*.adoc', '**/*.md', '**/*.properties', '**/*CompatibilitySpec.groovy'])
+    excludes([
+            '**/*.ad',
+            '**/*.asciidoc',
+            '**/*.adoc',
+            '**/*.md',
+            '**/*.properties',
+            '**/*.dsl.groovySpec.groovy',
+            '**/*.dsl.kotlinSpec.groovy',
+    ])
 }
 
 pluginBundle {
@@ -147,6 +155,8 @@ gradleTest {
     if (OS.windows) {
         gradleArguments '-g', file("${buildDir}/gradleTest/userHome").absolutePath.replaceAll(~$/\\/$, '/')
     }
+
+    mustRunAfter test, integrationTest, remoteTest
 }
 
 task release {

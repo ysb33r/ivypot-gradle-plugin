@@ -67,7 +67,7 @@ class OfflineRepositorySync extends DefaultTask {
             }.join('|')
         }.curry(this))
 
-        inputs.properties.put('cached binaries' , { OfflineRepositorySync ors ->
+        inputs.properties.put('cached binaries', { OfflineRepositorySync ors ->
             ors.binaries*.toString().join('')
         }.curry(this))
 
@@ -110,6 +110,7 @@ class OfflineRepositorySync extends DefaultTask {
         project.file(this.binaryRepoRoot).absoluteFile
     }
 
+    @Internal
     NamedDomainObjectContainer<BinaryRepository> getBinaryRepositories() {
         this.binaryRepositories
     }
@@ -137,6 +138,7 @@ class OfflineRepositorySync extends DefaultTask {
      * @return A project configuration container with all of the named configurations. Does not
      * return the {@code buildscript} configuration in here. The latter is made available directly to
      */
+    @Internal
     Set<Configuration> getConfigurations() {
         Set<Configuration> configurationSet = []
         projectConfigurations.collect { Project p, List<Object> configs ->
@@ -253,6 +255,7 @@ class OfflineRepositorySync extends DefaultTask {
      *
      * @return A repository handler that Gradle users should be accustomed to.
      */
+    @Internal
     RepositoryHandler getRepositories() {
         this.repositories
     }
@@ -282,6 +285,7 @@ class OfflineRepositorySync extends DefaultTask {
      *
      * @return Artifact pattern or null in case repoRoot has not been set.
      */
+    @Internal
     String getArtifactPattern() {
         repoRoot ? "${repoRoot}/${repoArtifactPattern}" : null
     }
@@ -290,11 +294,11 @@ class OfflineRepositorySync extends DefaultTask {
     List<BinaryArtifactDependency> getBinaries() {
         List<DependencyHandlerExtension> handlers = [extBinaries]
         handlers.addAll(
-            projectConfigurations.keySet().collect { Project p ->
-                (DependencyHandlerExtension) (
-                        (ExtensionAware) p.dependencies).extensions.findByName(BinaryPotBasePlugin.EXTENSION_NAME
-                )
-            }.findAll { it != null }
+                projectConfigurations.keySet().collect { Project p ->
+                    (DependencyHandlerExtension) (
+                            (ExtensionAware) p.dependencies).extensions.findByName(BinaryPotBasePlugin.EXTENSION_NAME
+                    )
+                }.findAll { it != null }
         )
 
         handlers.collectMany { DependencyHandlerExtension dhext ->
@@ -353,8 +357,8 @@ class OfflineRepositorySync extends DefaultTask {
     }
 
     private IvyDependency ivyDependency(Dependency dep) {
-        if(dep instanceof ModuleDependency) {
-            ModuleDependency modDep = (ModuleDependency)dep
+        if (dep instanceof ModuleDependency) {
+            ModuleDependency modDep = (ModuleDependency) dep
             new IvyDependency(
                     organisation: dep.group,
                     module: dep.name,
@@ -400,11 +404,15 @@ class OfflineRepositorySync extends DefaultTask {
         this.repositories.findAll { repo ->
             repo.metaClass.respondsTo(repo, 'getRepositoryCredentials') && repo.credentials?.username && repo.credentials?.password
         }.collect { repo ->
-            [
+            def ret = [
                     host    : repo.url.host,
                     username: repo.credentials.username,
                     password: repo.credentials.password
             ] as Map<String, String>
+            if (repo.credentials.realm) {
+                ret['realm'] = it.credentials.realm
+            }
+            ret
         }
     }
 

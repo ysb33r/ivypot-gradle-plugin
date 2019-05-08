@@ -83,6 +83,7 @@ class OfflineRepositorySyncSpec extends Specification {
                         credentials {
                             username 'the'
                             password 'pig'
+                            realm 'sty'
                         }
                     }
 
@@ -159,6 +160,7 @@ class OfflineRepositorySyncSpec extends Specification {
 </url>"""
         ivyIvy.credentials.username == 'the'
         ivyIvy.credentials.password == 'pig'
+        ivyIvy.credentials.realm == 'sty'
 
         and: 'ivy with pattern layout loaded'
         ivyPattern.resolverXml() == '''<url name='ivy_6' m2compatible='false'>

@@ -47,6 +47,7 @@ class OfflineRepositoryExtension {
     Configuration getConfiguration() {
         def deps = [
                 createDependency("${GROOVY_GROUP}:groovy-ant:${groovyVersion}"),
+                createDependency("${GROOVY_GROUP}:groovy-xml:${groovyVersion}"),
                 createDependency("${IVY_GROUP}:ivy:${ivyVersion}")
         ]
 
