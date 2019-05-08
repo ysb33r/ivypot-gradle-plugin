@@ -5,6 +5,7 @@
 
 === Improvements
 
+* {issue}34[#34] Resolve classifiers and extensions correctly.
 * {issue}40[#40] Run repository synchronisation process in separate JVM.
 * {issue}41[#41] Allow arbitrary binaries to be cached.
 

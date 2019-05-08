@@ -289,6 +289,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         file_exists 'com.android.support.constraint/constraint-layout-solver/1.0.2/constraint-layout-solver-1.0.2.jar'
     }
 
+    @Issue('https://github.com/ysb33r/ivypot-gradle-plugin/issues/41')
     void 'Sync a remote binary that is defined in the task'() {
         setup:
         writeBuildFile """
@@ -309,6 +310,34 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
 
         then:
         file_exists 'binaries/nodejs/v7.10.0/node-v7.10.0-linux-x64.tar.xz'
+    }
+
+    @Issue('https://github.com/ysb33r/ivypot-gradle-plugin/issues/34')
+    void 'Use a different extension'() {
+        setup:
+        writeBuildFile """
+            configurations {
+                karaf
+            }
+
+            // tag::example_with_explicit_extension[]
+            dependencies {
+                karaf 'org.apache.karaf:apache-karaf:4.2.2@zip'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    mavenCentral()
+                }
+            }
+            // end::example_with_explicit_extension[]
+        """
+
+        when:
+        build()
+
+        then:
+        file_exists 'com.android.support.constraint/constraint-layout/1.0.2/constraint-layout-1.0.2.aar'
     }
 
     private boolean file_exists(String path) {

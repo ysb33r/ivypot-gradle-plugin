@@ -17,11 +17,7 @@ package org.ysb33r.gradle.ivypot.remote
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class IvyDependency implements Serializable {
-    String organisation
-    String module
-    String revision
+class IvyDependency extends BinaryDependency implements Serializable {
     boolean transitive
-    String typeFilter
     String confFilter
 }
