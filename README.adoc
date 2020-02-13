@@ -177,16 +177,19 @@ apply plugin : 'org.ysb33r.ivypot'
 
 syncRemoteRepositories {
 
-    addAllProjects() // <1>
+    repoDir offlineRepoDir <1>
 
-    addProject ':a:b'  // <2>
+    addAllProjects() // <2>
 
-    addProject ':a:b','compile','testCompile'  // <3>
+    addProject ':a:b'  // <3>
+
+    addProject ':a:b','compile','testCompile'  // <4>
 }
 ----
-<1> Adds all configurations from all subprojects and the rootproject with the exception of the current project. `buildscript` dependencies are not added via this call.
-<2> Adds all configurations from project `:a:b` as long as the current project is not called `:a:b`.
-<3> Adds only the `compile` and `testCompile` configurations from project `:a:b`. Once again `:a:b` must not be the current project.
+<1> Set offline repository root to a variable that is visible to all projects.
+<2> Adds all configurations from all subprojects and the rootproject with the exception of the current project. `buildscript` dependencies are not added via this call.
+<3> Adds all configurations from project `:a:b` as long as the current project is not called `:a:b`.
+<4> Adds only the `compile` and `testCompile` configurations from project `:a:b`. Once again `:a:b` must not be the current project.
 
 Now you just have to run `./gradlew syncRemoteRepositories` or `./gradlew :sync:syncRemoteRepositories` from the top.
 

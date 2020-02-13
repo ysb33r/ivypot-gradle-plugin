@@ -2,6 +2,17 @@
 :issue: link:https://github.com/ysb33r/ivypot-gradle-plugin/issues/
 :contributor: link:https://github.com/
 
+== 0.11
+
+=== Improvements
+
+* {issue}44[#44] Compatible with Gradle 6.1.
+* {issue}47[#47] Honour order of repositories as listed.
+
+=== Compatibility
+
+* Gradle compatibility tested 5.0 - 6.1
+
 == 0.10
 
 === Improvements

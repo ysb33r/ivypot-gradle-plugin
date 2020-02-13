@@ -55,21 +55,7 @@ class OfflineRepositorySync extends DefaultTask {
 
     @CompileDynamic
     OfflineRepositorySync() {
-
         repositories = new RepositoryHandler(project)
-
-        inputs.properties.put('project configurations', { OfflineRepositorySync ors ->
-            Set<Configuration> configs = ors.getConfigurations()
-            configs.collect { Configuration c ->
-                c.dependencies.collect { Dependency d ->
-                    "${d.group}:${d.name}:${d.version}"
-                }.join(',')
-            }.join('|')
-        }.curry(this))
-
-        inputs.properties.put('cached binaries', { OfflineRepositorySync ors ->
-            ors.binaries*.toString().join('')
-        }.curry(this))
 
         binaryRepositories = project.container(BinaryRepository) { String repoName ->
             DefaultBinaryRepository.create(repoName, null, null)
@@ -80,6 +66,24 @@ class OfflineRepositorySync extends DefaultTask {
         }
 
         extBinaries = extensions.create('cachedBinaries', DependencyHandlerExtension, project)
+
+        Closure projectConfigurations = { OfflineRepositorySync ors ->
+            Set<Configuration> configs = ors.getConfigurations()
+            configs.collect { Configuration c ->
+                c.dependencies.collect { Dependency d ->
+                    "${d.group}:${d.name}:${d.version}"
+                }.join(',')
+            }.join('|')
+        }.curry(this)
+
+        Closure cachedBinaries = { OfflineRepositorySync ors ->
+            ors.binaries*.toString().join('')
+        }.curry(this)
+
+        inputs.properties([
+            'project configurations': projectConfigurations,
+            'cached binaries': cachedBinaries
+        ])
     }
 
     /** The pattern that will be used to write artifacts into the target repository

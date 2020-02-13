@@ -39,24 +39,24 @@ class RepositoryHandler {
     }
 
     MavenArtifactRepository jcenter() {
-        (MavenArtifactRepository)addByName('BintrayJCenter', new JCenter())
+        (MavenArtifactRepository) addByName('BintrayJCenter', new JCenter())
     }
 
     MavenArtifactRepository mavenCentral() {
-        (MavenArtifactRepository)addByName('MavenRepo', new MavenCentral())
+        (MavenArtifactRepository) addByName('MavenRepo', new MavenCentral())
     }
 
     MavenArtifactRepository mavenLocal() {
-        (MavenArtifactRepository)addByName('MavenLocal', new MavenLocal())
+        (MavenArtifactRepository) addByName('MavenLocal', new MavenLocal())
     }
 
     MavenArtifactRepository google() {
-        (MavenArtifactRepository)addByName('Google', new Google())
+        (MavenArtifactRepository) addByName('Google', new Google())
     }
 
     MavenArtifactRepository maven(Closure configurator) {
         MavenArtifactRepository repo = new MavenArtifactRepository()
-        Closure cfg = (Closure)configurator.clone()
+        Closure cfg = (Closure) configurator.clone()
         cfg.resolveStrategy = Closure.DELEGATE_FIRST
         cfg.delegate = repo
         addByName(
@@ -67,12 +67,12 @@ class RepositoryHandler {
     }
 
     MavenArtifactRepository maven(Action<? super MavenArtifactRepository> configurator) {
-        addByName( "maven_${postfix}", new MavenArtifactRepository(), configurator)
+        addByName("maven_${postfix}", new MavenArtifactRepository(), configurator)
     }
 
     IvyArtifactRepository ivy(Closure configurator) {
         IvyArtifactRepository repo = new IvyArtifactRepository()
-        Closure cfg = (Closure)configurator.clone()
+        Closure cfg = (Closure) configurator.clone()
         cfg.resolveStrategy = Closure.DELEGATE_FIRST
         cfg.delegate = repo
         addByName(
@@ -83,17 +83,19 @@ class RepositoryHandler {
     }
 
     IvyArtifactRepository ivy(Action<? super IvyArtifactRepository> configurator) {
-        addByName( "ivy_${postfix}", new IvyArtifactRepository(), configurator)
+        addByName("ivy_${postfix}", new IvyArtifactRepository(), configurator)
     }
 
     private Repository addByName(final String name, Repository repo) {
         repo.name = name
+        repo.index = registeredRepositories.size() + 1
         registeredRepositories.add(repo)
         repo
     }
 
     private MavenArtifactRepository addByName(final String name, MavenArtifactRepository repo, Action<? super MavenArtifactRepository> configurator) {
         repo.name = name
+        repo.index = registeredRepositories.size() + 1
         configurator.execute(repo)
         registeredRepositories.add(repo)
         repo
@@ -101,6 +103,7 @@ class RepositoryHandler {
 
     private IvyArtifactRepository addByName(final String name, IvyArtifactRepository repo, Action<? super IvyArtifactRepository> configurator) {
         repo.name = name
+        repo.index = registeredRepositories.size() + 1
         configurator.execute(repo)
         registeredRepositories.add(repo)
         repo

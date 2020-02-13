@@ -9,7 +9,7 @@ script:
  - ./gradlew  -S clean build --console=plain --info --scan
 
 jdk:
- - oraclejdk8
+ - openjdk8
 
 os:
  - linux
