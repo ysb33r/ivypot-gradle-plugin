@@ -16,7 +16,6 @@ package org.ysb33r.gradle.ivypot
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import groovy.transform.Internal
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.NamedDomainObjectContainer
@@ -28,6 +27,7 @@ import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.JavaExecSpec
@@ -269,6 +269,7 @@ class OfflineRepositorySync extends DefaultTask {
      *
      * @return A set of all the dependencies
      */
+    @Internal
     Set<Dependency> getDependencies() {
         final Set<Dependency> deps = []
 
