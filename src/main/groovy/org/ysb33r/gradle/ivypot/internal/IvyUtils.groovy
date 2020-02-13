@@ -17,6 +17,7 @@ package org.ysb33r.gradle.ivypot.internal
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.xml.MarkupBuilder
+import org.ysb33r.gradle.ivypot.repositories.Repository
 import org.ysb33r.gradle.ivypot.repositories.RepositoryHandler
 import org.ysb33r.grolifant.api.FileUtils
 
@@ -27,13 +28,17 @@ class IvyUtils {
     @CompileDynamic
     static void writeSettingsFile(
             File settingsFile,
-            RepositoryHandler repositories,
+            RepositoryHandler repositoryHandler,
             File repoRoot,
             File cacheDir,
             String ivyPattern,
             String artifactPattern,
             Iterable<Map<String, String>> repositoryCredentials
     ) {
+        List<Repository> repositories = repositoryHandler.sort { a,b ->
+                a.index <=> b.index
+        }
+
         def xmlWriter = new StringWriter()
         def xml = new MarkupBuilder(xmlWriter)
         xml.ivysettings {

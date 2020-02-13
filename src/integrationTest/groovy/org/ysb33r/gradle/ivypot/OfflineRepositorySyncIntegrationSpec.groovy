@@ -88,6 +88,44 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
         }
     }
 
+    @Issue([
+        'https://github.com/ysb33r/ivypot-gradle-plugin/issues/47',
+        'https://github.com/asciidoctor/asciidoctor-gradle-plugin/issues/528'
+    ])
+    void 'Order of repositories should be honoured for resolving  artifacts'() {
+
+        setup:
+        File ivySettingsXml = new File(projectDir, 'build/tmp/syncRemoteRepositories/ivysettings.xml')
+        writeBuildFile """
+        configurations {
+                compile
+            }
+
+            // tag::example_two_repos[]
+            dependencies {
+                compile 'org.codehaus.groovy:groovy-all:2.3.11'
+            }
+
+            syncRemoteRepositories {
+                repositories {
+                    mavenCentral()
+                    jcenter()
+                }
+            }
+            // end::example_two_repos[]
+        """
+
+        when:
+        BuildResult result = build()
+        def ivySettings = new XmlSlurper().parse(ivySettingsXml)
+
+        then:
+        file_exists 'org.codehaus.groovy/groovy-all/2.3.11/ivy-2.3.11.xml'
+
+        ivySettings.resolvers.chain.ibiblio[0].@name == 'MavenRepo'
+        ivySettings.resolvers.chain.ibiblio[1].@name == 'BintrayJCenter'
+    }
+
     void 'Honour non-transitive dependencies'() {
 
         setup:
@@ -247,7 +285,7 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
 
             syncRemoteRepositories {
                 repositories {
-                    maven { url 'http://rubygems.lasagna.io/proxy/maven/releases' }
+                    maven { url 'https://mavengems.jruby.org' }
                 }
             }
             // end::example_rubygems[]
@@ -350,11 +388,11 @@ class OfflineRepositorySyncIntegrationSpec extends Specification {
 
     private BuildResult build() {
         GradleRunner.create().withDebug(true)
-                .withPluginClasspath()
-                .withProjectDir(projectDir)
-                .withArguments(['-i', '-s', DEFAULT_TASK])
-                .forwardOutput()
-                .build()
+            .withPluginClasspath()
+            .withProjectDir(projectDir)
+            .withArguments(['-i', '-s', DEFAULT_TASK])
+            .forwardOutput()
+            .build()
     }
 
     void withBuildScript(String content) {

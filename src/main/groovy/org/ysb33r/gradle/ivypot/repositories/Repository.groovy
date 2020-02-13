@@ -19,9 +19,17 @@ import org.gradle.api.Named
 import org.ysb33r.gradle.ivypot.IvyXml
 
 /**
- * @since 1.0
+ *
  */
 @CompileStatic
 interface Repository extends Named, IvyXml {
     void setName(final String name)
+
+    /**
+     *
+     * @param idx
+     *
+     * @since 0.11
+     */
+    void setIndex(int idx)
 }

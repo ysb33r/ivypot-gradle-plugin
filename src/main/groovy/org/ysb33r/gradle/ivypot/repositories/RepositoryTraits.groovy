@@ -14,7 +14,7 @@
 
 package org.ysb33r.gradle.ivypot.repositories
 
-import groovy.transform.CompileDynamic
+
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.GradleException
@@ -91,18 +91,12 @@ trait RepositoryTraits {
      * Configure the Credentials for this repository using the supplied Closure.
      *
      * @code
-     * repositories {
-     *   maven {
-     *     credentials {
-     *       username = 'joe'
+     * repositories {*   maven {*     credentials {*       username = 'joe'
      *       password = 'secret'
-     *     }
-     *   }
-     * }
-     * @endcode
+     *}*}*}* @endcode
      */
     void credentials(Closure closure) {
-        Closure cfg = (Closure)(closure.clone())
+        Closure cfg = (Closure) (closure.clone())
         cfg.delegate = this.credentials
         cfg()
     }
@@ -126,7 +120,7 @@ trait RepositoryTraits {
      */
     def <T extends org.gradle.api.credentials.Credentials> T getCredentials(Class<T> aClass) {
         if (this.credentials instanceof T) {
-            return (T)(this.credentials)
+            return (T) (this.credentials)
         } else {
             throw new IllegalArgumentException("${Credentials.class.name} cannot be converted to ${aClass.name}")
         }
@@ -170,6 +164,26 @@ trait RepositoryTraits {
         this.name = name
     }
 
+    /** Returns the proposed order number for this repository
+     *
+     * @return Order number
+     *
+     * @since 0.11
+     */
+    int getIndex() {
+        this.order
+    }
+
+    /** Sets an order number for this repository
+     *
+     * @param idx Order number
+     *
+     * @since 0.11
+     */
+    void setIndex(int idx) {
+        this.order = idx
+    }
+
     void authentication(Action<? super AuthenticationContainer> action) {
         throw new GradleException("Authentication containers are not implemented. If this is a requirement for your use case then register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/24")
     }
@@ -178,7 +192,7 @@ trait RepositoryTraits {
         throw new GradleException("Authentication containers are not implemented. If this is a requirement for your use case then register your interest at https://github.com/ysb33r/ivypot-gradle-plugin/issues/24")
     }
 
-
+    private int order
     private String name
     private Object url
     private Credentials credentials = new Credentials()
