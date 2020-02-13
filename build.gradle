@@ -143,6 +143,7 @@ publishPlugins {
 }
 
 gradleTest {
+    versions '6.1'
     versions '5.4.1'
     versions '5.0'
 

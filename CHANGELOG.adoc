@@ -4,6 +4,14 @@
 
 == 0.11 - Roadmap
 
+=== Improvements
+
+* {issue}44[#44] Compatible with Gradle 6.1.
+
+=== Compatibility
+
+* Gradle compatibility tested 5.0 - 6.1
+
 == 0.10
 
 === Improvements
